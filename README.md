@@ -8,7 +8,7 @@ This is derived from blue's findings and is explained in the following thread
 http://forum.enjoysudoku.com/scan-solution-grids-for-17-clues-as-of-blue-t34012.html
 
 Here the external loop is in the band with the lowest count (band 1 or band 2).
-The second band is then produced in a similar way to the processing of band 3 in the previous coe.
+The second band is then produced in a way similar to the processing of band 3 in the previous code.
 
 The target is to try to speed up the process for bands having a big numbers of valids band1/band2.
 First tests lets hope a 40% improvement in run time.
