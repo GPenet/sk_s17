@@ -402,44 +402,33 @@ struct GEN_BANDES_12 {// encapsulating global data
 };
 
 struct G17B3HANDLER {
-	G17TB3GO wg3;
 	int known_b3, rknown_b3, active_b3,   ib3, nb3,
 		active_sub, ndead, wactive0, nmiss, ncritical,
-		irloop, *uasb3, nuasb3, wua;
-	uint32_t mini_bf1, mini_bf2, mini_bf3,  pairs27, mini_triplet;
+		irloop, *uasb3, nuasb3, wua, stack;
+	uint32_t mini_bf1, mini_bf2, mini_bf3,pairsbf,  pairs27, mini_triplet;
 	GINT64 stack_count;
 	int diagh;
 	// ================== entry in the proces
 	void Init(int i);
-	void Not_Critical_wactive();
-	int IsMultiple(int bf);
+	uint32_t IsMultiple(int bf);
 	int ShrinkUas1(int * to, int no);
 	void Go();
 	//=============== process critical
 	void CriticalAssignCell(int Ru);
 	void Critical2pairs();
-	void Go_Critical();
-	//void CriticalEntryFromSubcritical(int *to, int no);
+	void Go_Critical(int * wua=0);
 	void CriticalLoop(int *to, int no);
 	void CriticalExitLoop(int *uasb3, int nuasb3);
 	void Critical_0_UA();
 	void CriticalFinalCheck();
 	//===================== process not critical
 	void Go_Not_Critical_missn();
-
 	//==================== process subcritical no cell added outside the GUAs field
-	void SubMini(G17B3HANDLER * o, int M, int mask, int stack, int imode, int bit);
-	void Go_Subcritical(int docheck = 1);
+	void SubMini( int M, int mask);
+	void Go_Subcritical();
 	void Go_SubcriticalMiniRow();
-	void Go_SubcriticalMiniRow_End(int stack);
 	//===============  debugging 
 	void PrintStatus();
-	void PrintStatusAfterFirstLoop(int ir, int * uasb3, int nuasb3);
-	void Print_Ok3();
-	void Print_Ok3GUAs();
-	void Print_Ok3_Not_Critical(int ractive_outfield);
-	void PrintB3UasOut(int wac);
-	void DNC(int wua, int rawua, char * lib);
 
 };
 
@@ -453,7 +442,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		// expansion 
 		int known_b3, rknown_b3, active_b3,
 			active_sub, ndead, wactive0,
-			irloop;
+			irloop,diag;
 		uint32_t *otuaif, onuaif, wua;
 
 
@@ -482,7 +471,6 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void Go_Critical();
 		void CriticalLoop();
 		void CriticalExitLoop();
-		void CriticalEntryFromSubcritical(int *to, int no);
 		void Critical_0_UA();
 		//===================== process not critical
 		void Go_Not_Critical_missn();
@@ -490,10 +478,10 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void SubMini(int M, int mask);
 		void Go_Subcritical();
 		void Go_SubcriticalMiniRow();
-		void Go_SubcriticalMiniRow_End(int stack);
 		int IsFinalMultiple();
 		void Status();
 	}sbb;
+
 	uint32_t ni3, mode_ab, ia, ib,
 		indd,indf,filt32,ncluesbandb,stack_filter;
 	GINT64 stack_countba, stack_count, stack_countf;
@@ -501,32 +489,38 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	X_EXPAND_3_5 * myt3_5,wi3_5;
 	STD_B1_2 * mybb;
 	//============== reduction of UAs GUAs
-	uint32_t tuasmini[36][50], ntuasmini[36], ntua,
+	uint32_t tuasmini[36][100], ntuasmini[36], ntua,
 		activemini[36],nactivemini;
 	uint64_t tua[512];
 	//__________________________ secondary guas table 
 	uint32_t tuar2[81][GUAREDSIZE], tuar3[81][GUAREDSIZE],
 		ntuar2[81], ntuar3[81];
-	uint32_t guar2i81[80], guar3i81[80], nguared_2, nguared_3;
+	uint32_t guar2i81[81], guar3i81[81], nguared_2, nguared_3;
 	BF128 forced81_2, forced81_3, final81_2, final81_3;
 	//========== tclues for valid XY 
-	uint32_t tclues[40];
+	uint32_t tclues[40];// mini 25+band a
 	int ncluesa, nclues;
 	//==================== current band 3 to process
-	uint32_t tcluesb12x[12], ncluesb3;
-	int ncluesb12, ntb3, nmiss;
+	uint32_t tcluesb12[20], ncluesb3;
+	int  ntb3, nmiss;
 	uint32_t mini_bf1, mini_bf2, mini_bf3, pairsbf, pairs27, mini_triplet;
 	uint32_t all_used_minis, mincount;
-	uint32_t uasb3_1[2000], uasb3_2[500], nuasb3_1, nuasb3_2;
+	uint32_t uasb3_1[500], uasb3_2[500],uas_in[500], nuasb3_1, nuasb3_2,nuas_in;
 
 	void Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode);
 	void AddMini(int imini, uint32_t ua);
 	void Init3clues();
 	int Init3_5clues();
-	int IsMultiple(int bf);
+	int IsMultiple(int bf,int diag=0);
 	void CriticalFinalCheck(int bf);
-
+	void GuasCollect(int bf);
+	int SetUpGuas2_3(int ib3);
+	int EndCollectBand3(int ib3);
+	void GoBand3(int ib3);
+	void ExpandBand3();
+	int BuildUas_in(uint32_t known, uint32_t field);
 	void DebugInit();
+	void Status();
 };
 
   
@@ -538,14 +532,17 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	uint64_t  band12_17;
 	BANDS_AB bands_ab;
 	G17B3HANDLER g17hh0;
-	uint32_t btuaif[2000], btuaof[128];
+	uint32_t btuaif[2000], btuaof[200];
 	MORE32 moreb;
+	//______sockets common to  all bands 3  
+	BF128 isguasocket2all, isguasocket3all;
 	//=====================process
 	void GoM10();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void Go();
 	inline void SetUp(BANDS_AB::BANDB * bb){
 		bb->tuaif = btuaif;
 		bb->tuaof = btuaof;
+		bands_ab.ncluesb3 = 6;
 	}
 		
 	//================ debugging code
