@@ -168,7 +168,6 @@ void STD_B1_2::DoExpandBand() {// find all 5 and 6 clues solutions
 	s3->iuab3 = 0; // copy the start table
 	s3->possible_cells = tua[0];
 	n3_5 = 0; 
-	memset(nind, 0, sizeof nind);
 	nxindex3 = 0;
 	int tcells[10];
 	//____________________  here start the search
@@ -208,7 +207,7 @@ next:
 		while (bitscanforward(cell, ac)) {// put active cells in table
 			register int bit = 1 << cell;
 			ac ^= bit;
-			t[nt++] = cell + dband;
+			t[nt++] = cell ;
 		}
 		//cout << "nt="<<nt<<" ispot="<<ispot << endl;
 		if (ispot == 3) { // valid 4 clues
@@ -227,11 +226,11 @@ next:
 			}
 		}
 		else if (ispot == 1) { // valid 2 clues  
-			for (int i3 = 0; i3 < nt - 2; i3++) {
+			for (int i3 = 0; i3 < nt; i3++) {
 				int filter = (1 << tcells[0]) | (1 << tcells[1]) | (1 << t[i3]);
 				xindex3[nxindex3++].Open(filter, n3_5,tcells);
 				x_expand_3_5[n3_5++].Add0();
-				for (int i4 = i3 + 1; i4 < nt - 1; i4++) {
+				for (int i4 = i3 + 1; i4 < nt; i4++) {
 					x_expand_3_5[n3_5++].Add1(t[i4]);
 					for (int i5 = i4 + 1; i5 < nt; i5++) {
 						x_expand_3_5[n3_5++].Add2(t[i4], t[i5]);
@@ -247,49 +246,25 @@ back:
 	if (--s3 >= spb3)goto next;
 	// and set last index
 	xindex3[nxindex3++].Open(0, n3_5,tcells);
-
-	if (g17b.debug17 > 1)cout << "indices bandes " << nind[0] << " " << nind[1] << " " << nind[2] << endl;
+	//DebugExpand();
 }
 void STD_B1_2::DebugExpand() {
-	int nn = nind[1];
 	cout << "debugexpand nindex=" << nxindex3 << " ntot="<< n3_5 << endl;
-	for (int i = 0; i < nxindex3; i++) {
+	for (int i = 0; i < nxindex3-1; i++) {
 		XINDEX3 w = xindex3[i];
+		int ideb = w.ideb, iend = xindex3[i+1].ideb;
 		cout << Char27out(w.cellsbf) << "\t" << w.ideb << endl;
+		for (int i = 0; i < 3; i++) {
+			int c = w.tcells[i];
+			if (!(w.cellsbf & (1 << c))) cout << "erreur i=" << i << " c=" << c << endl;
+		}
 	}
 }
-void STD_B1_2::DebugIndex2() {
-	int nn = nind[1];
-	cout <<"debugindex2 nindex="<<nn<<endl;
-	for (int i = 0; i <= nn; i++) {
-		int *w =  index2[i] ;
-		cout << w[1] << "\t" << w[2] 
-			<<"\t"<< Char27out(w[0])<< endl;
-	}
-}
-void STD_B1_2::Debug_2_3() {
-	cout << "debug index 2 index 3" << endl;
 
-	int nn = nind[1];// index 2
-	cout << "debugindex 2 for n6 nindex=" << nn << endl;
-	for (int i = 0; i <= nn; i++) {
-		int *w =  index2[i] ;
-		cout <<i<< oct << " 0" << w[0] << dec << "\t"  << w[2] << endl;
-	}
-	nn = nind[2];// index 3
-	cout << "debugindex 3  nindex=" << nn << endl;
-	for (int i = 0; i <= nn; i++) {
-		int *w = index3[i];
-		cout<<i << oct <<" 0"<< w[0] << dec << "\t" << w[1] << endl;
-	}
-}
+
 void STD_B1_2::PrintShortStatus() {
 	cout  << band << "\t\tband main data i0-415="<<i416 << endl;
 	cout << "nua    \t" << nua << endl;
-	cout << "n5     \t" << n5 << endl;
-	cout << "n6     \t" << n6 << endl;
-	cout << "n5 ind \t" << nind[0] << endl;
-	cout << "n6 ind \t" << nind[1] << endl;
 
 }
 
@@ -650,7 +625,7 @@ void GENUAS_B12::EndCollectMoreStep() {
 		if (!ib) ua <<= 32;
 		ua |= w0;
 		if (g17b.debug17) {
-			if (!(ua&g17b.band12_17)) {
+			if (!(ua&g17b.p17diag.bf.u64[0])) {
 				cout << "EndCollectMoreStep error wrong ua more  seen i="<<i 
 					<<" zh1b_g.nua= "<< zh1b_g.nua << endl;
 				cout << Char2Xout(ua) << " wrong ua table coming out of zhone" << endl;

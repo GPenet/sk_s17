@@ -193,9 +193,6 @@ struct STD_B1_2 :STD_B416 {
 	XINDEX3 xindex3[2000];
 	X_EXPAND_3_5 x_expand_3_5[70000]; //51520 for 5 alone
 	int nxindex3,n3_5;
-	// 12 115 maximum see band 28
-	int  index1[30][3], index2[135][3], index3[2000][2],
-		n5, n6, nind[3];// bitfiedl,current index 5 current index 6
 	// row solution pattern in digit
 	int mini_digs[9], mini_pairs[27],
 		revised_g[9];// after false forced in 1/2 minirows
@@ -208,8 +205,6 @@ struct STD_B1_2 :STD_B416 {
 	uint32_t GetMiniData(int index, uint32_t & bcells, STD_B1_2 *bb);
 	void DoExpandBand();	
 	void DebugExpand();
-	void DebugIndex2();
-	void Debug_2_3();
 	void PrintShortStatus();
 };
 
@@ -464,11 +459,12 @@ struct BANDS_AB {// handling bands 12 in A B mode
 			nmiss = ncb2 - ncrit;
 		}
 		//void Init(int i);
+		int BuildIF_short();
 		int ShrinkUas1();
 		void Go();
 		//=============== process critical
 		void CriticalAssignCell(int Ru);
-		void Go_Critical();
+		void Go_Critical(int * wua = 0);
 		void CriticalLoop();
 		void CriticalExitLoop();
 		void Critical_0_UA();
@@ -482,7 +478,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void Status();
 	}sbb;
 
-	uint32_t ni3, mode_ab, ia, ib,
+	uint32_t ni3, mode_ab, ia, ib,myuab,
 		indd,indf,filt32,ncluesbandb,stack_filter;
 	GINT64 stack_countba, stack_count, stack_countf;
 	XINDEX3 * myi3,wi3;
@@ -525,11 +521,9 @@ struct BANDS_AB {// handling bands 12 in A B mode
 
   
 struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
-	BF128 p17diag;
-	int b3lim,debug17, diag,
-		band1_17, band2_17, band3_17,
+	BF128 p17diag;// known 17 pattern for tests
+	int b3lim,debug17, diag,diagbug,aigstop,
 		npuz, a_17_found_here;
-	uint64_t  band12_17;
 	BANDS_AB bands_ab;
 	G17B3HANDLER g17hh0;
 	uint32_t btuaif[2000], btuaof[200];

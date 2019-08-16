@@ -307,14 +307,14 @@ int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
 	if( myb3.guas.isguasocket2.Off_c(w.i_81)) return 0;
 	//this is a valid pair if not hit in band 3by the known 17 
 	//must be hit in bands 1-2 
-	if (myb3.guas.ua_pair[w.i_81] & g17b.band3_17) return 0;//hit in band 3
+	if (myb3.guas.ua_pair[w.i_81] & g17b.p17diag.bf.u32[2]) return 0;//hit in band 3
 	//cout << Char27out(myb3.guas.ua_pair[w.i_81]) << " i81=" << w.i_81 << endl;
 
 	for (uint32_t i = 0; i < w.nua; i++) {// exit false if not hit 
 		register uint64_t R = w.tua[i];
 		if (0)
 			cout << Char2Xout(R) << " cc=" << (R >> 59) << " i=" << i << endl;
-		if (R&g17b.band12_17)continue;
+		if (R&g17b.p17diag.bf.u64[0])continue;
 		cout << "not valid gua2 for i_81=" << w.i_81 << endl;
 		cout << Char2Xout(R) << " cc=" << (R >> 59) <<" i="<<i<< endl;
 		return 1;

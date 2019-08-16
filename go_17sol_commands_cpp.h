@@ -29,7 +29,9 @@ const char * libs_c17_00_cpt2g[40] = {
 	"22 n sockets1",//22
 	"23 max bands 3",//23
 	"24 max bands 3 go",//24
-	"25",	"26",	"27",	"28", "29",
+	"25 number of 17 found std",
+	"26 number of 17 found through expandb3",
+	"27",	"28", "29",
 	"30",	"31",	"32",	"33", "34",
 	"35",	"36",	"37",	"38", "39",
 
@@ -42,7 +44,7 @@ void Go_c17_00( ) {// p2 process
 	cout << sgo.vx[4] << " -v4- 0 if p2a 1 if p2b" << endl;
 
 	int it16_start = sgo.vx[0];
-	g17b.debug17 = 0;
+	g17b.debug17 = g17b.aigstop=0;
 	g17b.diag = sgo.vx[6];
 	genb12.skip = sgo.vx[2];
 	genb12.last = sgo.vx[3];
@@ -114,79 +116,44 @@ void Go_c17_10( ) {
 	while (finput.GetLigne()) {
 		npuz++;
 		g17b.npuz = npuz;
-		g17b.a_17_found_here = 0;
+		g17b.a_17_found_here =g17b.aigstop= 0;
 		if (npuz <= (int)sgo.vx[2]) continue;
 		if (npuz > (int)sgo.vx[3]) break;
 		g17b.debug17 = sgo.vx[0];
 		//if (npuz >5) return;
 		cout << " to process  n="<<dec << npuz << endl;
 		long tdeb = GetTimeMillis();
-		// =======================morph entry to have min n6 count in first
-		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
-		BANDMINLEX::PERM perm_ret;
-		bandminlex.Getmin(zs0, &perm_ret);
-		int ib1 = perm_ret.i416, ib1a = t416_to_n6[ib1];
-		bandminlex.Getmin(&zs0[27], &perm_ret);
-		int ib2 = perm_ret.i416, ib2a = t416_to_n6[ib2];
-		bandminlex.Getmin(&zs0[54], &perm_ret);
-		int ib3 = perm_ret.i416, ib3a = t416_to_n6[ib3];
-		if (ib1a > ib2a) {// change band2 <-> band1
-			for (int i = 0; i < 27; i++) {
-				char temp = ze[i];	ze[i] = ze[i + 27];	ze[i + 27] = temp;
-				temp = ze[i + 82];	ze[i + 82] = ze[i + 109]; ze[i + 109] = temp;
-				int w = ib1a;	ib1a = ib2a;	ib2a = w;
-			}
-		}
-		if (ib1a > ib3a) {// change band3 <-> band1
-			for (int i = 0; i < 27; i++) {
-				char temp = ze[i];	ze[i] = ze[i + 54];		ze[i + 54] = temp;
-				temp = ze[i + 82];	ze[i + 82] = ze[i + 136];	ze[i + 136] = temp;
-				int w = ib1a;	ib1a = ib3a;	ib3a = w;
-			}
-		}
 		//================================ to avoid the 665 case
 		int ncb3 = 0;
-		for (int i = 0; i < 27; i++) {
+		for (int i = 0; i < 27; i++) 
 			if (ze[i + 136] - '.')ncb3++;
-		}
 		if (ncb3 == 5) {// change band3 <-> band2
 			for (int i = 0; i < 27; i++) {
 				char temp = ze[i + 27];	ze[i + 27] = ze[i + 54];	ze[i + 54] = temp;
 				temp = ze[i + 109];	ze[i + 109] = ze[i + 136];	ze[i + 136] = temp;
 			}
-			int w = ib2a;	ib2a = ib3a;	ib3a = w;
 		}
-		//if (ib3a < ib2a)tb[ib1a]++; else ta[ib1a]++;
-		//if (ib3a < ib2a)tbt++; else tat++;
-		// redo id to build tables
+		// =======================morph entry 
 		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
+		BANDMINLEX::PERM perm_ret;
 		bandminlex.Getmin(zs0, &perm_ret);
-		ib1 = perm_ret.i416;
-		ib1a = t416_to_n6[ib1];
+		int ib1 = perm_ret.i416, ib1a = t416_to_n6[ib1];
 		myband1.InitBand2_3(ib1, ze, perm_ret, 0);
 		bandminlex.Getmin(&zs0[27], &perm_ret);
-		ib2 = perm_ret.i416;
-		ib2a = t416_to_n6[ib2];
+		int ib2 = perm_ret.i416, ib2a = t416_to_n6[ib2];
 		myband2.InitBand2_3(ib2, &ze[27], perm_ret, 1);
 		bandminlex.Getmin(&zs0[54], &perm_ret);
-		ib3 = perm_ret.i416;
-		ib3a = t416_to_n6[ib3];
+		int ib3 = perm_ret.i416, ib3a = t416_to_n6[ib3];
 		genb12.bands3[0].InitBand3(ib3, &ze[54], perm_ret);
 		genb12.nband3 = 1;
 		myband1.DoExpandBand();// expand band1
 		ze[81] = 0;
-		if (g17b.debug17)cout << ze << " morphed source "<<endl
-			<< &ze[82] << endl;
 		char * ze2 = &ze[82];
-		g17b.band1_17 = g17b.band2_17 = g17b.band3_17 = 0;
-		for (int i = 0; i < 27; i++) {
-			if (ze2[i] - '.') g17b.band1_17 |= 1 << i;
-			if (ze2[i + 27] - '.') g17b.band2_17 |= 1 << i;
-			if (ze2[i + 54] - '.') g17b.band3_17 |= 1 << i;
-		}
-		g17b.band12_17 = ((uint64_t)g17b.band2_17 << 32) | g17b.band1_17;
+		g17b.p17diag.SetAll_0();
+		for (int i = 0; i < 81; i++) if (ze2[i] != '.')
+			g17b.p17diag.Set_c(i);
 		if (g17b.debug17)
-			cout << Char2Xout(g17b.band12_17) << " b12 pattern for the 17" << endl;
+			cout << Char2Xout(g17b.p17diag.bf.u64[0]) << " b12 pattern for the 17" << endl;
 		genb12.ValidInitGang();
 		g17b.GoM10();
 		if (!g17b.a_17_found_here) {
