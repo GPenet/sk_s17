@@ -112,6 +112,7 @@ struct ZH2B {// size 32 bytes
 	//void EndInit_2digits_bandb(int fl, int ibandb);
 
 	uint64_t ValidXY(uint32_t * tclues, int n,int test=0);
+	void DebugValidXY(uint32_t * tclues, int n, int test = 0);
 	int Update();
 	int FullUpdate();
 	void ComputeNext();

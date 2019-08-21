@@ -116,12 +116,13 @@ void Go_c17_10( ) {
 	while (finput.GetLigne()) {
 		npuz++;
 		g17b.npuz = npuz;
-		g17b.a_17_found_here =g17b.aigstop= 0;
+		g17b.a_17_found_here = 0;
+		g17b.aigstop= 0;
 		if (npuz <= (int)sgo.vx[2]) continue;
 		if (npuz > (int)sgo.vx[3]) break;
 		g17b.debug17 = sgo.vx[0];
 		//if (npuz >5) return;
-		cout << " to process  n="<<dec << npuz << endl;
+		cout << " to process  n="<<dec << npuz <<" debug="<< g17b.debug17 << endl;
 		long tdeb = GetTimeMillis();
 		//================================ to avoid the 665 case
 		int ncb3 = 0;
@@ -133,6 +134,10 @@ void Go_c17_10( ) {
 				temp = ze[i + 109];	ze[i + 109] = ze[i + 136];	ze[i + 136] = temp;
 			}
 		}
+
+		if (g17b.debug17)
+			cout << ze <<  " to process  n="  << npuz << endl;
+
 		// =======================morph entry 
 		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
 		BANDMINLEX::PERM perm_ret;
@@ -168,6 +173,21 @@ void Go_c17_10( ) {
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
 }
+int G17B::DebugK17M10() {
+	GodebugInit(0);
+	if (GodebugCheckUas("check uas")) return 1;
+	if (debug17 > 2) {
+		cout <<"index band 1"<<endl;
+		myband1.DebugExpand();
+		cout << "index band 2" << endl;
+		myband2.DebugExpand();
+
+	}
+	return 0;
+}
+
+
+
 void Go_c17_11() {// extract cout xx5 file1 xx6
 	// search 17 using a file having known  as entry and one 17 given 6 6 5
 	char * ze = finput.ze;

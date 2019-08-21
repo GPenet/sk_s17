@@ -399,21 +399,22 @@ struct GEN_BANDES_12 {// encapsulating global data
 struct G17B3HANDLER {
 	int known_b3, rknown_b3, active_b3,   ib3, nb3,
 		active_sub, ndead, wactive0, nmiss, ncritical,
-		irloop, *uasb3, nuasb3, wua, stack;
-	uint32_t mini_bf1, mini_bf2, mini_bf3,pairsbf,  pairs27, mini_triplet;
+		irloop, wua, stack;
+	uint32_t mini_bf1, mini_bf2, mini_bf3,pairsbf,  pairs27, mini_triplet,
+		*uasb3if, nuasb3if, *uasb3of, nuasb3of,andoutf;
 	GINT64 stack_count;
 	int diagh;
 	// ================== entry in the proces
 	void Init(int i);
 	uint32_t IsMultiple(int bf);
-	int ShrinkUas1(int * to, int no);
-	void Go();
+	int BuildIfShortB3();
+	int ShrinkUas1();
 	//=============== process critical
 	void CriticalAssignCell(int Ru);
 	void Critical2pairs();
-	void Go_Critical(int * wua=0);
-	void CriticalLoop(int *to, int no);
-	void CriticalExitLoop(int *uasb3, int nuasb3);
+	void Go_Critical(uint32_t * wua=0);
+	void CriticalLoop();
+	void CriticalExitLoop();
 	void Critical_0_UA();
 	void CriticalFinalCheck();
 	//===================== process not critical
@@ -435,10 +436,10 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		// uas in field outfiel
 		uint32_t *tuaif, *tuaof, nuaif, nuaof, andoutf;
 		// expansion 
-		int known_b3, rknown_b3, active_b3,
-			active_sub, ndead, wactive0,
-			irloop,diag;
-		uint32_t *otuaif, onuaif, wua;
+		int known_bb, rknown_bb, active_bb,
+			active_sub, ndead,  wactive0,
+			irloop,diag,diagbug;
+		uint32_t  wua;
 
 
 		void AddIF(uint32_t ua) {
@@ -464,7 +465,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void Go();
 		//=============== process critical
 		void CriticalAssignCell(int Ru);
-		void Go_Critical(int * wua = 0);
+		void Go_Critical(uint32_t * wua = 0);
 		void CriticalLoop();
 		void CriticalExitLoop();
 		void Critical_0_UA();
@@ -474,8 +475,9 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void SubMini(int M, int mask);
 		void Go_Subcritical();
 		void Go_SubcriticalMiniRow();
-		int IsFinalMultiple();
+		int IsFinalMultiple(uint32_t * wua=0);
 		void Status();
+		void DebugIfOf();
 	}sbb;
 
 	uint32_t ni3, mode_ab, ia, ib,myuab,
@@ -484,6 +486,10 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	XINDEX3 * myi3,wi3;
 	X_EXPAND_3_5 * myt3_5,wi3_5;
 	STD_B1_2 * mybb;
+	//======= band d initial infield outfield and more outfield table
+	uint32_t btuaif[200], btuaof[2000], tuaif[2000],
+		nbif,nbof;
+	uint32_t more_of[128], nmoreof;
 	//============== reduction of UAs GUAs
 	uint32_t tuasmini[36][100], ntuasmini[36], ntua,
 		activemini[36],nactivemini;
@@ -501,7 +507,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	int  ntb3, nmiss;
 	uint32_t mini_bf1, mini_bf2, mini_bf3, pairsbf, pairs27, mini_triplet;
 	uint32_t all_used_minis, mincount;
-	uint32_t uasb3_1[500], uasb3_2[500],uas_in[500], nuasb3_1, nuasb3_2,nuas_in;
+	uint32_t uasb3_1[2000], uasb3_2[2000],uas_in[2000], nuasb3_1, nuasb3_2,nuas_in;
 
 	void Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode);
 	void AddMini(int imini, uint32_t ua);
@@ -514,7 +520,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	int EndCollectBand3(int ib3);
 	void GoBand3(int ib3);
 	void ExpandBand3();
-	int BuildUas_in(uint32_t known, uint32_t field);
+	int BuildUasB3_in(uint32_t known, uint32_t field);
 	void DebugInit();
 	void Status();
 };
@@ -526,21 +532,20 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 		npuz, a_17_found_here;
 	BANDS_AB bands_ab;
 	G17B3HANDLER g17hh0;
-	uint32_t btuaif[2000], btuaof[200];
-	MORE32 moreb;
+	//MORE32 moreb;
 	//______sockets common to  all bands 3  
 	BF128 isguasocket2all, isguasocket3all;
 	//=====================process
 	void GoM10();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void Go();
 	inline void SetUp(BANDS_AB::BANDB * bb){
-		bb->tuaif = btuaif;
-		bb->tuaof = btuaof;
+		bb->tuaof = bands_ab.btuaof;
 		bands_ab.ncluesb3 = 6;
 	}
 		
 	//================ debugging code
 	void PrintEndPuz();
+	int DebugK17M10();
 	void GodebugInit(int mode);
 	int GodebugFindKnown17();
 	int GodebugCheckUas(const char * lib);

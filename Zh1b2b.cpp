@@ -415,6 +415,19 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n, int test) {
 	}
 	return zh2b_g.ua_ret;
 }
+void ZH2B::DebugValidXY(uint32_t * tclues, int n, int test) {
+	zh2b_g.test = test;
+	if (test)cout << "entry validxy" << endl;
+	zh2b_g.ua_ret = 0;
+	Init_std_bands();
+	InitTclues(tclues, n);
+	ImageCandidats();
+	FullUpdate();
+	ImageCandidats();
+	for (int i = 0; i < 9; i++) 		FD[i] = zh2b_g.fd_sols[0][i];
+	cout << "registered solution" << endl;
+	ImageCandidats();
+}
 void ZH2B::GuessGo(int dig, BF64 & wsol) {// done in a new ocurrence
 	*this = *(this - 1);	// apply wsol and make next step
 	FD[dig] = wsol;// update will do the job
