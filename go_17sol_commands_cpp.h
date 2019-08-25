@@ -114,6 +114,7 @@ void Go_c17_10( ) {
 	int * zs0 = genb12.grid0, npuz = 0;
 	cout << "Go_c17_10() search 17 using a file having known 17 656 " << endl;
 	while (finput.GetLigne()) {
+		if(strlen(ze)<160) continue;// skip blank lines
 		npuz++;
 		g17b.npuz = npuz;
 		g17b.a_17_found_here = 0;
@@ -160,6 +161,7 @@ void Go_c17_10( ) {
 		if (g17b.debug17)
 			cout << Char2Xout(g17b.p17diag.bf.u64[0]) << " b12 pattern for the 17" << endl;
 		genb12.ValidInitGang();
+		g17b.npuz = npuz;
 		g17b.GoM10();
 		if (!g17b.a_17_found_here) {
 			cout << "puz="<<npuz << " failed to find the searched 17" << endl;

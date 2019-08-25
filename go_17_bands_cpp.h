@@ -227,6 +227,7 @@ next:
 		}
 		else if (ispot == 1) { // valid 2 clues  
 			for (int i3 = 0; i3 < nt; i3++) {
+				tcells[2] = t[i3];
 				int filter = (1 << tcells[0]) | (1 << tcells[1]) | (1 << t[i3]);
 				xindex3[nxindex3++].Open(filter, n3_5,tcells);
 				x_expand_3_5[n3_5++].Add0();

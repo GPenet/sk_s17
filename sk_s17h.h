@@ -486,10 +486,10 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	XINDEX3 * myi3,wi3;
 	X_EXPAND_3_5 * myt3_5,wi3_5;
 	STD_B1_2 * mybb;
-	//======= band d initial infield outfield and more outfield table
+	//======= band B initial infield outfield and more outfield table
 	uint32_t btuaif[200], btuaof[2000], tuaif[2000],
 		nbif,nbof;
-	uint32_t more_of[128], nmoreof;
+	uint32_t more_of[128], nmoreof, more_if[128], nmoreif;
 	//============== reduction of UAs GUAs
 	uint32_t tuasmini[36][100], ntuasmini[36], ntua,
 		activemini[36],nactivemini;
@@ -532,7 +532,7 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 		npuz, a_17_found_here;
 	BANDS_AB bands_ab;
 	G17B3HANDLER g17hh0;
-	//MORE32 moreb;
+	MORE32 moreb;
 	//______sockets common to  all bands 3  
 	BF128 isguasocket2all, isguasocket3all;
 	//=====================process

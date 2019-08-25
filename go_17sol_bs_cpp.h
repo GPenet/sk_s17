@@ -54,7 +54,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 		isguasocket3all &= genb12.bands3[ib3].guas.isguasocket3;
 	}
 
-	if (g17b.debug17) if (DebugK17M10()) return;;
+	if (g17b.debug17>1) if (DebugK17M10()) return;;
 	p_cpt2g[18] += genuasb12.nua;
 	p_cpt2g[19] += genb12.ntua2;
 	p_cpt2g[20] += genb12.ntua3;
@@ -95,6 +95,7 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 	for (uint32_t i3 = 0; i3 < ni3; i3++) {
 		wi3 = myi3[i3];
 		Init3clues();
+		//if (i3 == 248)g17b.debug17 = 1;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		if (g17b.debug17) {//skip if not ok
 			if (wi3.cellsbf & (~g17b.p17diag.bf.u32[ia])) continue;
 			cout << "right i3=" << i3 << endl;
@@ -168,8 +169,8 @@ void BANDS_AB::DebugInit() {
 	cout << Char9out(triplets) << " triplets" << endl;
 }
 int BANDS_AB::Init3_5clues() {
-	//g17b.moreb.Init();
-	nmoreof = 0;// init more outfield table
+	g17b.moreb.Init();
+	nmoreof = nmoreif=0;// init more outfield table
 	// build tclues band a (3 clues done)
 	register uint32_t w = wi3_5.d;
 	ncluesa = (w & 3) + 3;
@@ -242,7 +243,6 @@ int BANDS_AB::Init3_5clues() {
 
 	{	// build remaining uas in and out field
 		sbb.nuaif = sbb.nuaof = 0;
-		sbb.andoutf = BIT_SET_27;
 		register uint32_t F = filt32,IF=sbb.critbf;
 		//cout << Char27out(IF) << " In Field " << endl;
 		//cout << Char27out(F) << " Filter "   << endl;
@@ -260,7 +260,6 @@ int BANDS_AB::Init3_5clues() {
 				if (sbb.ncrit == ncluesbandb)return 0;
 				//cout << Char27out(Ub) << " Ubof b12 "  << endl;
 				sbb.AddOF(Ub);
-				sbb.andoutf &= Ub;
 				if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))return 0;
 			}
 		}
@@ -278,7 +277,6 @@ int BANDS_AB::Init3_5clues() {
 				if (sbb.ncrit == ncluesbandb)return 0;
 				//cout << Char27out(Ub) << " Ubof bb "  << endl;
 				sbb.AddOF(Ub);
-				sbb.andoutf &= Ub;
 				if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))return 0;
 			}
 		}
@@ -383,6 +381,14 @@ void BANDS_AB::BANDB::DebugIfOf() {
 //======================== start band b expansion
 
 void BANDS_AB::BANDB::Go() {//start band b expansion
+	if (1 ) {
+		BANDS_AB &bab = g17b.bands_ab;
+		uint32_t p17ba = g17b.p17diag.bf.u32[0];
+		if (bab.ia) p17ba = g17b.p17diag.bf.u32[1];
+		if (bab.filt32 == p17ba) 
+		cout << "we have the right band A nmiss=" << nmiss
+			<< " nuaif=" << nuaif << " nuaof=" << nuaof << "\t p_cpt2g[3]=" << p_cpt2g[3] << endl;
+	}	
 	if (g17b.debug17) {
 		BANDS_AB &bab = g17b.bands_ab;
 		uint32_t p17ba = g17b.p17diag.bf.u32[0];
@@ -393,9 +399,16 @@ void BANDS_AB::BANDB::Go() {//start band b expansion
 		cout << endl;
 		cout<<Char27out(bab.filt32) 
 			<< "we have the right band A nmiss="<<nmiss 
-			<<" nuaif=" << nuaif <<" nuaof=" << nuaof << endl;
+			<<" nuaif=" << nuaif <<" nuaof=" << nuaof <<"\t p_cpt2g[3]=" 
+			<< p_cpt2g[3] << endl;
 	}
 	diag = 0;
+	if (0  && (!g17b.debug17)&& p_cpt2g[3] == 3180) {
+		cout << "bandb in diag p_cpt2g[3]=" << p_cpt2g[3] << endl;
+		Status();
+		DebugIfOf();
+		diag = 1;
+	}
 	if (!nmiss) p_cpt2g[4] ++;
 	else if (nmiss < 2)p_cpt2g[5] ++;
 	else p_cpt2g[6] ++;
@@ -449,9 +462,11 @@ int BANDS_AB::BANDB::IsFinalMultiple(uint32_t * wua) {
 		register int Ru = tuaif[iua];
 		if(! (Ru & bf)) return 1;//known UA not hit multiple 
 	}
+	if (diag) cout << "IsFinalMultiple check more" << endl;
 	//check also nothing in more
-	//if (g17b.moreb.Check(bf)) return 1;
+	if (g17b.moreb.Check(bf)) return 1;
 	if (!active_bb) {
+		if (diag) cout << "IsFinalMultiple final check" << endl;
 		g17b.bands_ab.CriticalFinalCheck(known_bb);
 		return 1;
 	}
@@ -459,7 +474,7 @@ int BANDS_AB::BANDB::IsFinalMultiple(uint32_t * wua) {
 		rknown_bb = bf;
 		int uabr = g17b.bands_ab.IsMultiple(rknown_bb, diag);
 		if (uabr) {// multiple try to apply it upstream
-			if (wua) {// can be applied on wua
+			if (wua&&g17b.debug17>1) {// can be applied on wua
 				cout << "apply uaret" << endl;
 				cout <<Char27out(*wua) << " wua"<<endl;
 				cout << Char27out(uabr) << " ua b ret" << endl;
@@ -508,13 +523,18 @@ int BANDS_AB::BANDB::ShrinkUas1() {
 		cout << Char27out(known_bb) << "exit shrinkua1 nuaif=" << nuaif << endl;
 		cout << Char27out(active_bb) << " active bb" << endl;
 	}	
+	if (diag) {
+		cout << Char27out(known_bb) << "exit shrinkua1 nuaif=" << nuaif << endl;
+		for (uint32_t i = 0; i < nuaif; i++)
+			cout << Char27out(tuaif[i]) << endl;
+	}
 	if (!nuaif) irloop = 0;// no need to loop again
 	return 0;
 
 }
 void BANDS_AB::BANDB::Go_Critical(uint32_t * wua) {// critical situation all clues in pairs tripl:ets
 	//if (p_cpt2g[4] > 5) return;
-	if (g17b.debug17>2) {
+	if (g17b.debug17>2 || diag) {
 		cout << Char27out(active_bb) << "B active bb entry critical" << endl;
 		cout << Char32out(known_bb) << "known 32 at entry" << endl;
 	}
@@ -529,9 +549,15 @@ void BANDS_AB::BANDB::Go_Critical(uint32_t * wua) {// critical situation all clu
 	mini2 = 0;
 	if (BuildIF_short()) return;// shrink and sort the table in field
 	if (ShrinkUas1()) return;//assign possibles
-	if (g17b.debug17 && active_bb) {
+	if (g17b.debug17>2 && active_bb) {
 		cout << Char27out(known_bb) << "known after shrink wua"<<wua << endl;
 		cout << Char27out(active_bb) << " active b3 after shrink" << endl;
+	}
+	if (diag) {
+		cout << Char27out(known_bb) << "known after shrink wua" << wua << endl;
+		cout << Char27out(active_bb) << " active b3 after shrink" << endl;
+		Status();
+		DebugIfOf();
 	}
 	if (IsFinalMultiple(wua)) return;
 	if (g17b.debug17 > 2) {
@@ -548,12 +574,12 @@ void BANDS_AB::BANDB::CriticalLoop() {
 }
 void BANDS_AB::BANDB::CriticalExitLoop() {
 	int nmissb = ncb2 - _popcnt32(known_bb);// missing clues
-	if (g17b.debug17 > 2) {
+	if (g17b.debug17 > 2 || diag) {
 		cout << Char27out(known_bb) << "B entry critical exit loop nmissb="<< nmissb << endl;
 	}
 	if (nmissb < 0)return;
 	if (IsFinalMultiple())return;
-	if (g17b.debug17 > 2) {
+	if (g17b.debug17 > 2 || diag) {
 		cout << "B exit loop smallest ua nuaif=" << nuaif << endl;
 	}
 	if (nuaif) {		// find the smallest ua and apply it
@@ -587,10 +613,11 @@ void BANDS_AB::BANDB::CriticalExitLoop() {
 
 			}
 		}
-		if (g17b.debug17 > 2)		cout << Char27out(wua) << " wua to use" << endl;
+		if (g17b.debug17 > 2 || diag)		cout << Char27out(wua) << " wua to use" << endl;
 
 		while (bitscanforward(cell, wua)) {
-			if (g17b.debug17 > 2)		cout << Char27out(wua) << " wua entry while nmissb=" << nmissb << endl;
+			if (g17b.debug17 > 2||diag)		cout << Char27out(wua) << " wua entry while nmissb=" << nmissb 
+				<< " tuaif="<<tuaif <<" nuaif="<<nuaif<< endl;
 			register int bit = 1 << cell;
 			wua ^= bit;// clear bit
 			// clean the bit in active_b3, this is now a dead cell downstream
@@ -665,7 +692,7 @@ void BANDS_AB::BANDB::Critical_0_UA() {
 }
 // ____________________ sub critical
 void  BANDS_AB::BANDB::Go_Subcritical() {
-	if (g17b.debug17>2 || nmiss>1 )	cout << Char27out(known_bb) << "B entry sub critical nmiss= "<<nmiss<< endl;
+	if (g17b.debug17>2  )	cout << Char27out(known_bb) << "B entry sub critical nmiss= "<<nmiss<< endl;
 	active_bb = active_sub = critbf;
 	// check first if a global solution  is still possible  
 	if (IsFinalMultiple())		return;// not valid using all cells
@@ -748,6 +775,14 @@ void BANDS_AB::BANDB::Go_Not_Critical_missn() {
 			}
 		}
 	}
+	else if (nmiss == 1 ) {
+		andoutf = BIT_SET_27;
+		for (uint32_t iua = 0; iua < nuaof; iua++) 
+			andoutf &= tuaof[iua];
+		for (uint32_t i = 0; i < g17b.bands_ab.nmoreof; i++) {
+			andoutf &= g17b.bands_ab.more_of[i];
+		}
+	}
 	uint32_t wua = andoutf;
 	if (nmiss > 1) wua = tuaof[0] & BIT_SET_27;
 	if (!nuaof)wua = wactive0;
@@ -800,32 +835,63 @@ int BANDS_AB::IsMultiple(int bf,int diag) {
 	p_cpt2g[7]++;
 	register uint64_t myua = zh2b[0].ValidXY(tclues,nclues, 0);
 	//if (locdiag) cout <<Char2Xout(myua) << "uaret"<<endl;
-	if ( myua) {//store the fresh ua bands ab
+	if (myua) {//store the fresh ua bands ab
 		if (g17b.debug17>2) cout << Char2Xout(myua) << "uaret band b multiple" << endl;
 		register uint64_t uab = myua>>32,uaa= myua&BIT_SET_27,uab12=myua;
 		if (ia)uab12 = uab | (uaa << 32);
 		uint64_t cc64 = _popcnt64(uab12);
-		if(cc64<21)genuasb12.AddUACheck(uab12| ((uint64_t)cc64 << 59));// and update the UA table
-		if (cc64 <= 12) {// this should never be check for a bug 
-			cout <<Char27out(bf) << "fresh ua <=12 why ???" << endl;
-			cout << Char32out(bf) << "bf32" << endl;
-			cerr << "fresh ua <=12 why ???" << endl;
+		//if (cc64 < 20)
+		//	cout << Char2Xout(uab12) << "ua  to add " 
+		//	<< "\tp_cpt2g[3]=" << p_cpt2g[3] << "\tp_cpt2g[8]=" << p_cpt2g[8] << endl;
+		if (cc64 < 12) {// this should never be check for a bug 
+			cout <<Char2Xout(uab12)<<"ua < 12 to add ??? g17b.npuz"<< g17b.npuz 
+				<< endl;
+			//should already be there see where
+			uint64_t *t = genuasb12.tua;
+			uint32_t n = genuasb12.nua;
+			register uint64_t R = uab12;
+			for (uint32_t i = 0; i < n; i++) {
+				register uint64_t U = t[i] & BIT_SET_2X;
+				if (U == R) {
+					cerr << "fresh ua <12 bug npuz=" << g17b.npuz << endl;
+					cout << "this is a redundant UA see why" << endl;
+					cout << Char32out(bf) << "bf32 ib=" << ib << endl;
+					cout << "\tp_cpt2g[8]=" << p_cpt2g[8] << "\tindex ua= " << i << endl;
+					break;
+				}
+			}
+
+			sbb.Status();
+			sbb.DebugIfOf();
+			cout << "In Field Bandb table" << endl;
+			for (uint32_t i = 0; i < nbif; i++)
+				cout << Char27out(btuaif[i]) << endl;
+			cout << "Out Field Bandb table" << endl;
+			for (uint32_t i = 0; i < nbof; i++)
+				cout << Char27out(btuaof[i]) << endl;
+
 			zh2b[0].DebugValidXY(tclues, nclues, 0);
+
 		}
+		if (cc64 < 20)genuasb12.AddUACheck(uab12 | ((uint64_t)cc64 << 59));// and update the UA table
 		myuab = (uint32_t)uab;
-		int cc = _popcnt32((uint32_t)uab), i36;
+		int cc = _popcnt32((uint32_t)uab);
 		// add uab in field or in "more outfield
+		uint32_t ua = myuab | _popcnt32(myuab) << 27;
 		if (uab & sbb.critbf) {
-			sbb.AddIF(myuab);
+			if (nmoreif >= 128)nmoreif = 127;
+			if (g17b.debug17 > 1)cout << Char27out(ua) << "uabb  if to add " << endl;
+			AddUA32(more_if, nmoreif, ua);
 		}
 		else {
 			if (nmoreof >= 128)nmoreof = 127;
-			uint32_t ua = myuab | _popcnt32(myuab) << 27;
 			if (g17b.debug17 > 1)cout << Char27out(ua) << "uabb  of to add " << endl;
 			AddUA32(more_of, nmoreof, ua);
 		}
 
-		//g17b.moreb.Add((uint32_t)uab);
+		g17b.moreb.Add((uint32_t)uab);
+		/* this is bugging see later puz 12
+		int i36;
 		if(cc<2)return 1;// should never be <2
 		if (cc >= 4) {// add it to the reduced table 
 			if (ntua < 512)		tua[ntua++] = myua;
@@ -842,6 +908,7 @@ int BANDS_AB::IsMultiple(int bf,int diag) {
 			if (ntuasmini[i36] < 50)
 				tuasmini[i36][ntuasmini[i36]++] =(uint32_t) uab;
 		}
+	*/
 	}
 	return (myua>0);
 }
@@ -963,6 +1030,15 @@ void BANDS_AB::CriticalFinalCheck(int bf) {// no more ua is it a valid solution
 		cout <<Char27out(bf)<< "we have the right band B" << endl;
 	}
 	else if (g17b.debug17 > 1) return;
+	if (sbb.diag) {
+		BANDS_AB &bab = g17b.bands_ab;
+		uint32_t p17bb = g17b.p17diag.bf.u32[1];
+		if (bab.ia) p17bb = g17b.p17diag.bf.u32[0];
+		if ((uint32_t)bf == p17bb) 
+		cout << Char27out(bf) << "we have the right band B" << endl;
+		// provoque la solution ????
+		//g17b.debug17 = 3;
+	}	
 	p_cpt2g[8]++;
 	GuasCollect(bf);
 	int ib3 = 0; 
@@ -970,8 +1046,10 @@ void BANDS_AB::CriticalFinalCheck(int bf) {// no more ua is it a valid solution
 		if (!SetUpGuas2_3(ib3))goto oneband3;
 	return; // no band 3 with valid count
 oneband3:;
+	if (sbb.diag) cout << "check multiple" << endl;
 	register int ir = IsMultiple(bf);
 	if (!ir) {// one valid bands A + B
+		if (sbb.diag) cout << "not multiple" << endl;
 		p_cpt2g[9]++;
 		// must relabel clues bands a b in bands 1 2 if necessary
 		memcpy(tcluesb12, tclues, sizeof tcluesb12);
@@ -998,20 +1076,26 @@ void BANDS_AB::GoBand3(int ib3) {
 	if (g17b.debug17 >= 2) {
 		cout << " nmiss=" << nmiss << " nuas 1=" << nuasb3_1 << " nuas 2=" << nuasb3_2 << endl;
 		if (g17b.debug17 > 2) {
+			cout << "table uab3_1" << endl;
 			for (uint32_t i = 0; i < nuasb3_1; i++)
 				cout << Char27out(uasb3_1[i]) << " i=" << i << endl;
-			for (uint32_t i = 0; i < nuasb3_1; i++)
-				cout << Char27out(uasb3_1[i] & pairsbf) << " i=" << i << endl;
+			cout << "table uab3_2" << endl;
+			for (uint32_t i = 0; i < nuasb3_2; i++)
+				cout << Char27out(uasb3_2[i] ) << " i=" << i << endl;
 			cout << Char27out(filt32) << " filt32" << endl;
 			for (int i = 0; i < nclues; i++) {
 				cout << tcluesb12[i] << " ";
 				cout << endl;
 			}
-			zhou[0].ImageCandidats();
+			//zhou[0].ImageCandidats();
 		}
 
 		Status();
 		//return;
+	}
+	if (sbb.diag) {
+		cout << " nmiss=" << nmiss << " nuas 1=" << nuasb3_1 << " nuas 2=" << nuasb3_2 << endl;
+		Status();
 	}
 	if (nmiss < 2)p_cpt2g[10 + nmiss] ++;
 	else if (nmiss < 5)p_cpt2g[12] ++;
@@ -1019,6 +1103,7 @@ void BANDS_AB::GoBand3(int ib3) {
 	p_cpt2g[15] ++;
 	memcpy(&genb12.grid0[54], genb12.bands3[ib3].band0, 4*27);
 	G17B3HANDLER hh0; hh0.Init(ib3);
+	hh0.diagh = sbb.diag;
 	if (!mincount) ExpandBand3();
 	else if (!nmiss)hh0.Go_Critical();
 	else hh0.Go_Not_Critical_missn();
@@ -1371,9 +1456,10 @@ uint32_t G17B3HANDLER::IsMultiple(int bf) {
 		BF128 wua = zh_g2.cells_assigned;
 		ua = wua.bf.u32[2];
 		int cc = _popcnt32(ua);
-		if (g17b.diag >= 2) cout << Char27out(ua) << " ua b3 retour" << endl;
-		
-		if ( cc < 4) {
+		if (g17b.diag >= 2|| diagh) cout << Char27out(ua) << " ua b3 retour" << endl;
+		//if (1) cout << Char27out(ua) << " ua b3 retour" << endl;
+
+		if (0 && cc < 4) {// bugging, to re think mater npuz=22
 			if (cc == 2) {// fresh gua2
 				int i81 = myb3.GetI81_2(ua);
 				if (i81 >= 0) {
@@ -1440,9 +1526,15 @@ void G17B3HANDLER::CriticalAssignCell(int Ru){// assign a cell within the critic
 	}
 }
 int G17B3HANDLER::BuildIfShortB3() {
+	if (g17b.diag >= 2)	cout << Char27out(known_b3) << "entry BuildIfShortB3 " << endl;
 	if (g17b.bands_ab.BuildUasB3_in(known_b3, active_b3))return 1;
 	uasb3if = g17b.bands_ab.uas_in;
 	nuasb3if = g17b.bands_ab.nuas_in;
+	if (g17b.diag >= 2) {
+		cout << "uas_in afer buildshort" << endl;
+		for(uint32_t i=0;i< nuasb3if;i++)
+			cout << Char27out(uasb3if[i]) << endl;
+	}
 	return 0;
 }
 
@@ -1473,7 +1565,7 @@ int G17B3HANDLER::ShrinkUas1() {
 }
 void G17B3HANDLER::Go_Critical(uint32_t * wua){// critical situation all clues in pairs tripl:ets
 	//if (g17b.debug17 > 1 && known_b3)cout << Char27out(known_b3) << " entry critical" << endl;
-	if (g17b.diag >= 2)	cout << Char27out(known_b3) << "entry critical " << endl;
+	if (g17b.diag >= 2|| diagh)	cout << Char27out(known_b3) << "entry critical " << endl;
 	p_cpt2g[16]++;
 	active_b3 = pairsbf;
 	Critical2pairs();// assign 2 pairs in minirow to common cell
@@ -1504,10 +1596,10 @@ void G17B3HANDLER::CriticalLoop(){
 }
 void G17B3HANDLER::CriticalExitLoop(){
 	int nmissb = g17b.bands_ab.ncluesb3 - _popcnt32(known_b3);// missing clues
-	if (g17b.diag >= 2) cout<<Char27out(known_b3) << "critical exit loop missb="<< nmissb << endl;
+	if (g17b.diag >= 2|| diagh) cout<<Char27out(known_b3) << "critical exit loop missb="<< nmissb 
+		<<"nuasb3of="<< nuasb3of << endl;
 	if (nmissb < 0)return;
 	if (!active_b3){// nothing more to assign 
-		if (nuasb3of)return; // still not hit uas
 		if (nmissb)return;// dead cell in a mini row 3 pairs
 		CriticalFinalCheck();
 		return;
@@ -1515,7 +1607,7 @@ void G17B3HANDLER::CriticalExitLoop(){
 	// check known + active with brute force
 	int wknown = known_b3 | active_b3;
 	if (IsMultiple(known_b3 | active_b3))	return;// not valid using all cells
-	if (g17b.diag > 2) cout << "critical exit loop moreto do nuasb3=" << nuasb3if << endl;
+	if (g17b.diag > 2|| diagh) cout << "critical exit loop moreto do nuasb3=" << nuasb3if << endl;
 
 	if (nuasb3if){		// find the smallest ua and apply it
 		int wua = 0, sizeua = 27;
@@ -1751,7 +1843,7 @@ void G17B3HANDLER::Go_Subcritical(){// nmiss to select in the critical field
 }
 //======================================================================= not critical sequence
 void G17B3HANDLER::Go_Not_Critical_missn() {
-	if (g17b.debug17 > 1) 	cout<<Char27out(known_b3) << "entry not_critical miss " << nmiss
+	if (g17b.debug17 > 1 || diagh) 	cout<<Char27out(known_b3) << "entry not_critical miss " << nmiss
 		<<" nuasb3of="<< nuasb3of << endl;
 	if (known_b3) {// shrink the out field table
 		uint32_t * tn = &uasb3of[nuasb3of], n = 0;
@@ -1770,15 +1862,20 @@ void G17B3HANDLER::Go_Not_Critical_missn() {
 		uasb3of = tn;
 		nuasb3of = n;
 	}
+	else if (nmiss == 1 ) {
+		andoutf = wactive0;
+		for (uint32_t iua = 0; iua < nuasb3of; iua++)
+			andoutf &= uasb3of[iua];
+	}
 	uint32_t wua = andoutf;
 	if (nmiss > 1) wua = uasb3of[0] & BIT_SET_27;
 	if (!nuasb3of)wua = wactive0;
-	if (g17b.debug17 > 1)		cout << Char27out(wua) << "wua to use  " << endl;
+	if (g17b.debug17 > 1 || diagh)		cout << Char27out(wua) << "wua to use  " << endl;
 
 	if(wua){ // apply first UA to use or all out field cells 
 		uint32_t res;
 		while (bitscanforward(res, wua)) {
-			if (g17b.debug17 > 1)		cout << Char27out(wua) << "wua used nmiss= "<<nmiss << endl;
+			if (g17b.debug17 > 1|| diagh)		cout << Char27out(wua) << "wua used nmiss= "<<nmiss << endl;
 			int bit = 1 << res; wua ^= bit; wactive0 ^= bit;
 			G17B3HANDLER hn = *this; hn.nmiss--; hn.known_b3 |= bit;
 			if (hn.nmiss) {
