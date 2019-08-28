@@ -14,7 +14,8 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	const char * diagband ="268591437341627895597843216";
 	const char * diagpuz = "1....6...4......2.....3.5.....59........2...........16.....89.1..5.......72......";
 	diag = diagbug = 0;
-	cout << "entry m10 nb12=" << genb12.nb12 << " nbands3=" << genb12.nband3 << " p_cpt2g[0]=" << p_cpt2g[0] << endl;
+	if (diag )cout << "entry m10 nb12=" << genb12.nb12 << " nbands3=" << genb12.nband3 << " p_cpt2g[0]=" << p_cpt2g[0] << endl;
+	if (genb12.nb12 == sgo.vx[6]) diagbug = 1;
 	p_cpt2g[0] ++;
 	p_cpt2g[1] +=genb12.nband3;
 	if (genb12.nband3 > p_cpt2g[23])	p_cpt2g[23] = genb12.nband3;
@@ -35,7 +36,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
 	myband2.DoExpandBand();// expand band2
 
-	cout << "myband1.n3_5=" << myband1.n3_5 << " myband2.n3_5=" << myband2.n3_5 << endl;
+	if (diag)cout << "myband1.n3_5=" << myband1.n3_5 << " myband2.n3_5=" << myband2.n3_5 << endl;
 	if (!(myband1.n3_5| myband2.n3_5)) return; // no 656 no 566
 	int nb3 = genb12.nband3;
 
@@ -381,7 +382,7 @@ void BANDS_AB::BANDB::DebugIfOf() {
 //======================== start band b expansion
 
 void BANDS_AB::BANDB::Go() {//start band b expansion
-	if (1 ) {
+	if (0 ) {
 		BANDS_AB &bab = g17b.bands_ab;
 		uint32_t p17ba = g17b.p17diag.bf.u32[0];
 		if (bab.ia) p17ba = g17b.p17diag.bf.u32[1];
@@ -389,6 +390,10 @@ void BANDS_AB::BANDB::Go() {//start band b expansion
 		cout << "we have the right band A nmiss=" << nmiss
 			<< " nuaif=" << nuaif << " nuaof=" << nuaof << "\t p_cpt2g[3]=" << p_cpt2g[3] << endl;
 	}	
+	if (diagbug) {
+		cout << "start B expansion nmiss=" << nmiss
+			<< " nuaif=" << nuaif << " nuaof=" << nuaof << "\t p_cpt2g[3]=" << p_cpt2g[3] << endl;
+	}
 	if (g17b.debug17) {
 		BANDS_AB &bab = g17b.bands_ab;
 		uint32_t p17ba = g17b.p17diag.bf.u32[0];
@@ -601,7 +606,8 @@ void BANDS_AB::BANDB::CriticalExitLoop() {
 		}
 		else {
 			for (uint32_t i = 0; i < nuaif; i++) {
-				register int ua = tuaif[i], cc = _popcnt32(ua);
+				register int ua = tuaif[i]& active_bb,
+					cc = _popcnt32(ua);
 				if (cc < sizeua) { wua = ua; sizeua = cc; }
 				if (cc < 3)break; // this is the minimum
 			}
@@ -890,13 +896,13 @@ int BANDS_AB::IsMultiple(int bf,int diag) {
 		}
 
 		g17b.moreb.Add((uint32_t)uab);
-		/* this is bugging see later puz 12
-		int i36;
-		if(cc<2)return 1;// should never be <2
-		if (cc >= 4) {// add it to the reduced table 
+
+		if (cc < 2)return 1;// should never be <2
+		if (cc >= 4) {// add it to the reduced table in ua ub mode 
 			if (ntua < 512)		tua[ntua++] = myua;
-			return 1; 
+			return 1;
 		}
+		int i36;
 		for(int imini=0,bit=1,mask=7;imini<9;imini++,bit<<=1,mask<<=3){
 			if(!(uab&mask) )continue;
 			if (cc == 2) {// fresh mini2
@@ -906,9 +912,9 @@ int BANDS_AB::IsMultiple(int bf,int diag) {
 			else i36 = imini+27;
 			if (!ntuasmini[i36])activemini[nactivemini++] = i36;
 			if (ntuasmini[i36] < 50)
-				tuasmini[i36][ntuasmini[i36]++] =(uint32_t) uab;
+				tuasmini[i36][ntuasmini[i36]++] =(uint32_t) uaa;
 		}
-	*/
+	
 	}
 	return (myua>0);
 }
@@ -1093,16 +1099,19 @@ void BANDS_AB::GoBand3(int ib3) {
 		Status();
 		//return;
 	}
-	if (sbb.diag) {
-		cout << " nmiss=" << nmiss << " nuas 1=" << nuasb3_1 << " nuas 2=" << nuasb3_2 << endl;
-		Status();
-	}
 	if (nmiss < 2)p_cpt2g[10 + nmiss] ++;
 	else if (nmiss < 5)p_cpt2g[12] ++;
 	else p_cpt2g[13] ++;
-	p_cpt2g[15] ++;
+	//p_cpt2g[15] ++;// fait plus haut
 	memcpy(&genb12.grid0[54], genb12.bands3[ib3].band0, 4*27);
 	G17B3HANDLER hh0; hh0.Init(ib3);
+	//if (p_cpt2g[15] == 7281) sbb.diag  = 1;	else sbb.diag  = 0;
+	if (sbb.diag) {
+		cout << " nmiss=" << nmiss << " nuas 1=" << nuasb3_1 << " nuas 2=" << nuasb3_2 << endl;
+		Status();
+		cout << p_cpt2g[8] << "\t p_cpt2g[9]=" << p_cpt2g[9] << endl;
+		//return;
+	}
 	hh0.diagh = sbb.diag;
 	if (!mincount) ExpandBand3();
 	else if (!nmiss)hh0.Go_Critical();
@@ -1306,16 +1315,8 @@ void ZHOU::Guess17(int index, int diag) {
 			if (zh_g.nsol) return;
 			zh_g.go_back = 0;// see why it is 1
 		}
-		if (p_cpt2g[0] == sgo.vx[3])cout << "exit mini aig=" << aig << endl;
 		if (aig) {
 			int ir = Apply17SingleOrEmptyCells();// restore zh_g
-			if (p_cpt2g[0] == sgo.vx[3]) {
-				ImageCandidats();
-				cout << "retour apply17single " << ir << " zh_g.go_back= " << zh_g.go_back << endl;
-				char ws[82];
-				cout << zh_g.pairs.String3X(ws) << " paires" << endl;
-				cout << zh_g2.triplets.String3X(ws) << " triplets" << endl;
-			}
 			zh_g.go_back = 0;// see why it is 1
 		}
 	}
@@ -1434,8 +1435,9 @@ void G17B3HANDLER::Init(int i) {
 					//adjust count and known
 					known_b3 |= Mask & (~pairs27);// and set the common cell as assigned
 					mini_bf2 &= ~stp; // clear the 2pairs bit(s) in stack
-					active_b3 &= (~Mask);// clear the pairs in the in field bf
-					pairs27 &= (~Mask);// clear the pairs in the pair bf
+					active_b3 &= (~Mask);// clear the  field bf
+					pairsbf &= (~Mask);
+					pairs27 &= (~Mask);
 					ncritical -= _popcnt32(shrink);
 				}
 			}
@@ -1458,30 +1460,29 @@ uint32_t G17B3HANDLER::IsMultiple(int bf) {
 		int cc = _popcnt32(ua);
 		if (g17b.diag >= 2|| diagh) cout << Char27out(ua) << " ua b3 retour" << endl;
 		//if (1) cout << Char27out(ua) << " ua b3 retour" << endl;
-
-		if (0 && cc < 4) {// bugging, to re think mater npuz=22
+		if ( cc < 4) {// needs more tests on performance evolution
 			if (cc == 2) {// fresh gua2
 				int i81 = myb3.GetI81_2(ua);
 				if (i81 >= 0) {
 					bab.final81_2.Set_c(i81);// new valid gua2 for other bands
-					if (!bab.ntuar2[i81]) bab.guar2i81[bab.nguared_2++] = i81;;
+					if (!bab.ntuar2[i81]) bab.guar2i81[bab.nguared_2++] = i81;
 					if (bab.ntuar2[i81] < GUAREDSIZE)
-						bab.tuar2[i81][bab.ntuar2[i81]++] = wua.bf.u32[bab.ia];
+						bab.tuar2[i81][bab.ntuar2[i81]++] = wua.bf.u32[bab.ib];
 					GEN_BANDES_12::SGUA2 & sg = genb12.tsgua2[i81];
-					if (sg.nua >= SIZETGUA)sg.nua = SIZETGUA - 1;
-					AddUA64(sg.tua, sg.nua, wua.bf.u64[0]);
+					if (sg.nua < SIZETGUA) 
+						AddUA64(sg.tua, sg.nua, wua.bf.u64[0]);
 				}
 			}
 			if (cc == 3) {// fresh gua2
 				int i81 = myb3.GetI81_3(ua);
 				if (i81 >= 0) {
 					bab.final81_3.Set_c(i81);// new valid gua2 for other bands
-					if (!bab.ntuar3[i81]) bab.guar3i81[bab.nguared_3++] = i81;;
+					if (!bab.ntuar3[i81]) bab.guar3i81[bab.nguared_3++] = i81;
 					if (bab.ntuar3[i81] < GUAREDSIZE)
-						bab.tuar3[i81][bab.ntuar3[i81]++] = wua.bf.u32[bab.ia];
+						bab.tuar3[i81][bab.ntuar3[i81]++] = wua.bf.u32[bab.ib];
 					GEN_BANDES_12::SGUA3 & sg = genb12.tsgua3[i81];
-					if (sg.nua >= SIZETGUA)sg.nua = SIZETGUA - 1;
-					AddUA64(sg.tua, sg.nua, wua.bf.u64[0]);
+					if (sg.nua < SIZETGUA)
+						AddUA64(sg.tua, sg.nua, wua.bf.u64[0]);
 				}
 			}
 		}
@@ -1628,7 +1629,8 @@ void G17B3HANDLER::CriticalExitLoop(){
 		}
 		else {
 			for (uint32_t i = 0; i < nuasb3if; i++) {
-				register int ua = uasb3if[i], cc = _popcnt32(ua);
+				register int ua = uasb3if[i]& active_b3,
+					cc = _popcnt32(ua);
 				if (cc < sizeua) { wua = ua; sizeua = cc; }
 				if (cc < 3)break; // this is the minimum
 			}
@@ -1731,7 +1733,8 @@ void G17B3HANDLER::CriticalFinalCheck(){// no more ua is it a valid solution
 	register int ir = IsMultiple(known_b3);// , g17b.debug17);
 	if (ir)		return;
 	if(g17b.a_17_found_here>2 )return;
-	cout << "one sol to print valid id"<< p_cpt2g[9] << endl;
+	cout << "one sol to print final check valid id"<< p_cpt2g[15]
+		<<Char32out(known_b3) << endl;
 	char ws[82];
 	strcpy(ws, empty_puzzle);
 	for (int i = 0; i < g17b.bands_ab.nclues; i++) {
@@ -1740,7 +1743,7 @@ void G17B3HANDLER::CriticalFinalCheck(){// no more ua is it a valid solution
 	}
 	for (int i = 0, bit = 1; i < 27; i++, bit <<= 1)if (known_b3 & bit)
 		ws[54 + i] = genb12.grid0[54 + i] + '1';
-	fout1 << ws << endl;
+	fout1 << ws << ";" << genb12.nb12 / 64 << ";" << genb12.i1t16 << ";" << genb12.i2t16  << endl;
 	p_cpt2g[25]++;
 	g17b.a_17_found_here ++;
 }
@@ -1956,31 +1959,37 @@ next:
 			goto next;
 		}
 	}	// no more ua
-	// check if this is a valid band 1+2+3 (can not be a valid 16)
-	int ir = zhou[1].CallMultipleB3(zhou[0], sn3->all_previous_cells, 0);
-	if (ir) {//consider store the fresh ua b3
-		uint32_t ua = zh_g2.cells_assigned.bf.u32[2];
-		if (nua < 500) // 500 is the limit for tuasb2
-			tua[nua++] = ua;
-		if (ispot < ncluesb3 - 1) {// if not a 17 do next
-			sn3->iuab3 = nua - 1;
-			sn3->possible_cells = ua & sn3->active_cells;
-			s3 = sn3; // switch to next spot
+	{	// check if this is a valid band 1+2+3 (can not be a valid 16)
+		int ir = zhou[1].CallMultipleB3(zhou[0], sn3->all_previous_cells, 0);
+		if (ir) {//consider store the fresh ua b3
+			uint32_t ua = zh_g2.cells_assigned.bf.u32[2];
+			if (nua < 500) // 500 is the limit for tuasb2
+				tua[nua++] = ua;
+			if (ispot < ncluesb3 - 1) {// if not a 17 do next
+				sn3->iuab3 = nua - 1;
+				sn3->possible_cells = ua & sn3->active_cells;
+				s3 = sn3; // switch to next spot
+			}
+			goto next;
 		}
+		if (ispot < ncluesb3 - 1) {//  not a 17 should never be
+			cout << " bug false 17" << endl;
+			cerr << " bug false 17" << endl;
+		}
+		// valid 17
+		cout << "one sol to print expand b3 valid id" << p_cpt2g[15] << endl;
+		char ws[82];
+		strcpy(ws, empty_puzzle);
+		for (int i = 0; i < nclues; i++) {
+			int cell = tcluesb12[i];
+			ws[cell] = genb12.grid0[cell] + '1';
+		}
+		for (int i = 0; i <= ispot; i++)
+			ws[54 + tcells[i]] = genb12.grid0[54 + tcells[i]] + '1';
+		fout1 << ws << ";" << genb12.nb12 / 64 << ";" << genb12.i1t16 << ";" << genb12.i2t16 << ";expand" << endl;
+		p_cpt2g[26]++;
 		goto next;
 	}
-	// valid 17
-	char ws[82];
-	strcpy(ws, empty_puzzle);
-	for (int i = 0; i < nclues; i++) {
-		int cell = tcluesb12[i];
-		ws[cell] = genb12.grid0[cell] + '1';
-	}
-	for (int i = 0; i <= ispot; i++)
-		ws[54 + tcells[i]] = genb12.grid0[54 + tcells[i]] + '1';
-	fout1 << ws << endl;
-	p_cpt2g[26]++;
-	goto next;
 back:
 	if (--s3 >= spb3)goto next;
 }
