@@ -443,13 +443,13 @@ struct BANDS_AB {// handling bands 12 in A B mode
 
 
 		void AddIF(uint32_t ua) {
-			if (nuaif >= 128)nuaif = 127;
+			if (nuaif >= 256)nuaif = 255;
 			ua &= BIT_SET_27;
 			ua |= _popcnt32(ua) << 27;
 			AddUA32(tuaif, nuaif,ua);
 		}
 		void AddOF(uint32_t ua) {
-			if (nuaof >= 128)nuaof = 127;
+			if (nuaof >= 256)nuaof = 255;
 			ua &= BIT_SET_27;
 			ua |= _popcnt32(ua) << 27;
 			AddUA32(tuaof, nuaof,ua);
@@ -475,7 +475,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void SubMini(int M, int mask);
 		void Go_Subcritical();
 		void Go_SubcriticalMiniRow();
-		int IsFinalMultiple(uint32_t * wua=0);
+		int IsFinalOrMultiple(uint32_t * wua=0);
 		void Status();
 		void DebugIfOf();
 	}sbb;
@@ -487,7 +487,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	X_EXPAND_3_5 * myt3_5,wi3_5;
 	STD_B1_2 * mybb;
 	//======= band B initial infield outfield and more outfield table
-	uint32_t btuaif[200], btuaof[2000], tuaif[2000],
+	uint32_t btuaif[256], btuaof[3000], tuaif[3000],
 		nbif,nbof;
 	uint32_t more_of[128], nmoreof, more_if[128], nmoreif;
 	//============== reduction of UAs GUAs
@@ -544,7 +544,6 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	}
 		
 	//================ debugging code
-	void PrintEndPuz();
 	int DebugK17M10();
 	void GodebugInit(int mode);
 	int GodebugFindKnown17();

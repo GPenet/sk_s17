@@ -11,7 +11,7 @@
 #define GUALIMSIZE 18
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
-#define TUA64_12SIZE 2000
+#define TUA64_12SIZE 3000
 //============================================== 
 
 #define MAXN5 51520

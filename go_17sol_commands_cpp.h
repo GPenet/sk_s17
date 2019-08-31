@@ -59,8 +59,6 @@ void Go_c17_00( ) {// p2 process
 	zh_g.modevalid = 1;
 	zh_g2.grid0 = genb12.grid0;
 	zh_g2.zsol = zh_g2.stdfirstsol;
-	memset(p_cpt, 0, sizeof p_cpt);// band2 and band 3 count
-	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
 	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
 	memset(p_cpt1g, 0, sizeof p_cpt1g);// used in debugging sequences only
 	memset(p_cpt2g, 0, sizeof p_cpt2g);// used in debugging sequences only

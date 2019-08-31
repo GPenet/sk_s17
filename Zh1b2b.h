@@ -65,8 +65,7 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	int tsd[7], ntsd, tsd2[7], ntsd2,
 		socket_digits, isd1;// socket more
 	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
-		rdigit, nctlg, go_back,  
-		test;
+		rdigit, nctlg, go_back;
 	// band UA collection active band pointers and UA table to build
 	int modeguess;
 	int  puz0[54], gangster[9];

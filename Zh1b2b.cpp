@@ -31,7 +31,7 @@ ZHONE zhone_i;
 //============================= ZH_GLOBAL code
 ZH2B_GLOBAL::ZH2B_GLOBAL(){
 	zsol = 0; // no solution unless required buy the user
-	nctlg = test = 0;
+	nctlg =  0;
 
 }
 void ZH2B_GLOBAL::GetBands(int * g1, int * g2) {
@@ -72,8 +72,6 @@ uint64_t ZH2B_GLOBAL::BuildUaret(BF64 * wsol) {
 		BF64 w = wsol[i] - fd_sols[0][i];
 		ua_ret |= w.bf.u64;
 	}
-	if (test)
-		cout << Char2Xout(ua_ret) << " gua found" << endl;
 	return ua_ret;
 }
 
@@ -376,7 +374,6 @@ char * ZH2B::SetKnown(char * zs) {
 	return zs;
 }
 uint64_t ZH2B::ValidXY(uint32_t * tclues, int n, int test) {
-	zh2b_g.test = test;
 	if (test)cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
 	Init_std_bands();
@@ -416,7 +413,6 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n, int test) {
 	return zh2b_g.ua_ret;
 }
 void ZH2B::DebugValidXY(uint32_t * tclues, int n, int test) {
-	zh2b_g.test = test;
 	if (test)cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
 	Init_std_bands();
