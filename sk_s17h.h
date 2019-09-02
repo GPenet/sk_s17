@@ -138,36 +138,7 @@ struct G17TB3GO{
 	void Debug();
 }g17tb3go[512];
 
-//========== indexstep max number of blocs 
-#define G17BLOCSUA 4
-#define G17BLOCGSUA 10
-//640 uas 320 guas ,,, step size
 
-#define G17CHKX 256
-#define G17CHKY 256
-#define MAXNIND6 20000
-#define NVUAS128 4
-#define NVGUAS128 15
-struct V256_UAS { 
-	BF128 v[NVUAS128];
-	inline void operator&= (const V256_UAS &r) {
-		v[0] &= r.v[0]; v[1] &= r.v[1];
-		// assuming NVUAS128 4
-		v[2] &= r.v[2]; v[3] &= r.v[3];
-
-	}
-	void Debug(const char * lib,int mirror=0);
-	void Fout(const char * lib);
-	void Cout();
-};
-struct V256_GUAS { 
-	BF128 v[NVGUAS128]; 
-	inline void operator&= (const V256_GUAS &r) {
-		for (int i = 0; i < NVGUAS128; i++)v[i] &= r.v[i];
-	}
-};
-
-//#include "g17_debuggingcode.cpp"
 // standard first band (or unique band)
 struct STD_B416 {
 	char band[28];

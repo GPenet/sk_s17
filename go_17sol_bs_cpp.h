@@ -423,13 +423,7 @@ int BANDS_AB::BANDB::IsFinalOrMultiple(uint32_t * wua) {
 	}
 	if (bf != rknown_bb) {
 		rknown_bb = bf;
-		int uabr = g17b.bands_ab.IsMultiple(rknown_bb, diag);
-		if (uabr) {// multiple apply it upstream
-			if (wua) {// can be applied on wua
-				*wua &= g17b.bands_ab.myuab;
-			}
-			return 1;
-		}
+		if(g17b.bands_ab.IsMultiple(rknown_bb, diag))return 1;
 	}
 	return 0;
 }
@@ -1949,25 +1943,6 @@ int G17B::GodebugCheckUas(const char * lib) {
 		return 1;
 	}
 	return 0;
-}
-
-void V256_UAS::Debug(const char * lib, int mirror) {
-	cout << " v256_ua for " << lib << endl;
-	uint32_t * t32=v[0].bf.u32;
-	for (int i = 0; i < 8; i++){
-		int w = t32[i];
-		if (mirror) w =~w;
-		if(w)
-		cout << Char32out(w) << " " << 32 * i << "-" << 32 * (i + 1) - 1 << endl;
-	}
-}
-void V256_UAS::Fout(const char * lib) {
-	fout1 << lib << v[0].bf.u64[0] << " " << v[0].bf.u64[1] << " "
-		<< v[1].bf.u64[0] << " " << v[1].bf.u64[1] << endl;
-}
-void V256_UAS::Cout() {
-	cout << Char64out(v[0].bf.u64[0]);
-	cout<< endl;
 }
 
 
