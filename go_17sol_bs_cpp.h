@@ -246,8 +246,8 @@ int BANDS_AB::Init3_5clues() {
 			else {
 				if (sbb.ncrit == ncluesbandb)return 0;
 				sbb.AddOF(Ub);
-				if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))
-					return 0;
+				//if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))
+					//return 0;
 			}
 		}
 	}
@@ -260,7 +260,7 @@ int BANDS_AB::Init3_5clues() {
 			else {
 				if (sbb.ncrit == ncluesbandb)return 0;
 				sbb.AddOF(Ub);
-				if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))return 0;
+				//if ((!sbb.andoutf) && sbb.ncrit == (ncluesbandb - 1))return 0;
 			}
 		}
 	}
