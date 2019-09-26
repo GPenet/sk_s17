@@ -489,6 +489,7 @@ void GEN_BANDES_12::GetStartB2(int ip) {//set  rows 3_9 column 1
 	}
 }
 void GEN_BANDES_12::Start(int mode) {
+	tulock.InitBuf();
 	modeb12 = mode;
 	myband1.Initstd();
 	zsol[81] = 0;
@@ -507,11 +508,9 @@ void GEN_BANDES_12::NewBand1(int iw) {
 	for (int i = 0; i < 9; i++) // init columns status
 		cold[i] = 0x1ff ^ myband1.gangster[i];
 	zsol[27] = 0;
-	myband1.DoExpandBand( );// expand and set index
-	if (0) {
-		myband1.DebugExpand();
-		return;
-	}
+	myband1.ExpandBand( );// expand and set index
+	tulock.LockExpand(myband1.nmyi3, myband1.nmybv5, myband1.nmybv6);
+	tulock.Store1();
 	cout << "i1t16=" << i1t16 << " it16=" << it16 
 		<< " n auto morphs=" << n_auto_b1 << endl;
 	ntc = 0;

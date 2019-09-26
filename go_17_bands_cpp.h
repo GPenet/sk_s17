@@ -156,19 +156,22 @@ uint32_t  STD_B1_2::GetMiniData(int index, uint32_t & bcells, STD_B1_2 *bb) {
 	bb->revised_g[dcol + pcol[1]] ^= digs;
 	return digs;
 }
-void STD_B1_2::DoExpandBand() {// find all 5 and 6 clues solutions
+void STD_B416::ExpandBand( ) {// find all 5 and 6 clues solutions
 	struct SPB3 {// spots to find band 3 minimum valid solutions
 		// ====================== constant after initialization
 		int  possible_cells, all_previous_cells, active_cells, iuab3;
 		//uint64_t cursol;
 	}spb3[7], *s3, *sn3;
+	myi3 = tulock.px_index;
+	mybv5 = tulock.px_5;
+	mybv6 = tulock.px_6;
+	myvect6 = tulock.pvx1;// lock also vector space
+	nmyi3=nmybv5 = nmybv6 = 0;
 	s3 = spb3;
 	s3->all_previous_cells = 0;
 	s3->active_cells = BIT_SET_27;// all cells active
 	s3->iuab3 = 0; // copy the start table
 	s3->possible_cells = tua[0];
-	n3_5 = 0; 
-	nxindex3 = 0;
 	int tcells[10];
 	//____________________  here start the search
 next:
@@ -178,18 +181,18 @@ next:
 	if (!bitscanforward(cell, s3->possible_cells))goto back;
 	{// apply cell in bitfields
 		register int bit = (uint64_t)1 << cell;
-		tcells[ispot] = cell ;
+		tcells[ispot] = cell;
 		s3->possible_cells ^= bit;// clear bit
 		register int filter = s3->all_previous_cells | bit,
 			ac = s3->active_cells ^ bit;
 		sn3 = s3 + 1;
 		sn3->all_previous_cells = filter;
-		if (ispot ==2) 	xindex3[nxindex3++].Open(filter, n3_5, tcells);
+		if (ispot == 2) 	myi3[nmyi3++].Open5_6(filter, nmybv5, nmybv6);
 		sn3->active_cells = s3->active_cells = ac;
 		// nextspot:take the next available ua to loop		
-		for (int i = s3->iuab3 + 1; i <(int) nua; i++) {
+		for (int i = s3->iuab3 + 1; i < (int)nua; i++) {
 			if (tua[i] & filter)continue;
-			if (ispot >= 4) 	goto next;//passing the limit	
+			if (ispot >= 5) 	goto next;//passing the limit	
 			sn3->iuab3 = i;
 			sn3->possible_cells = tua[i] & ac;
 			s3 = sn3; // switch to next spot
@@ -199,42 +202,64 @@ next:
 	}
 	//cout << "no more ispot=" << ispot << endl;
 	// no more ua
-	if (ispot == 4)	x_expand_3_5[n3_5++].Add2(tcells[3], tcells[4]);
-		//t6[n6++].Create6(tcells);// a 6 clues puzzle
-	else {// if below 5 loop  for redundant clues
+	register int R0 = sn3->all_previous_cells;
+	if (ispot == 5)	mybv6[nmybv6++]=R0;
+	else {// if below 6 loop  for redundant clues
+		//if (diag)	cout << Char27out(R0) << "new entry n=" << (_popcnt32(R0))
+		//	<< " ispot="<<ispot<< endl;
 		int t[32], nt = 0;
-		register int ac = s3->active_cells;
+		register int ac = s3->active_cells&BIT_SET_27;
 		while (bitscanforward(cell, ac)) {// put active cells in table
-			register int bit = 1 << cell;
-			ac ^= bit;
-			t[nt++] = cell ;
+			ac ^= 1 << cell;
+			t[nt++] = 1 << cell;
 		}
-		//cout << "nt="<<nt<<" ispot="<<ispot << endl;
-		if (ispot == 3) { // valid 4 clues
-			x_expand_3_5[n3_5++].Add1(tcells[3]);
-			for (int i5 = 0; i5 < nt; i5++)
-				x_expand_3_5[n3_5++].Add2(tcells[3], t[i5]);
+		if (ispot == 4) {
+			mybv5[nmybv5++]=R0;
+			//if (diag)	cout << Char27out(R0) << "isp4 " << (_popcnt32(R0)) << endl;
+			for (int i6 = 0; i6 < nt; i6++) {
+				register int R6 = t[i6] | R0;
+				mybv6[nmybv6++]=R6;
+			}
+		}
+		else if (ispot == 3) { // valid 4 clues
+			for (int i5 = 0; i5 < nt; i5++) {
+				register int R5 = t[i5] | R0;
+				mybv5[nmybv5++] = R5;
+				//if (diag)	cout << Char27out(R5) << "isp3 " << (_popcnt32(R5)) << endl;
+				for (int i6 = i5 + 1; i6 < nt; i6++) {
+					register int R6 = t[i6] | R5;
+					mybv6[nmybv6++] = R6;
+				}
+			}
 		}
 		else if (ispot == 2) { // valid 3 clues  
-			x_expand_3_5[n3_5++].Add0();
 			for (int i4 = 0; i4 < nt; i4++) {
-				x_expand_3_5[n3_5++].Add1(t[i4]);
-				tcells[3] = t[i4];
+				register int R4 = t[i4] | R0;
 				for (int i5 = i4 + 1; i5 < nt; i5++) {
-					x_expand_3_5[n3_5++].Add2(t[i4], t[i5]);
+					register int R5 = t[i5] | R4;
+					mybv5[nmybv5++] = R5;
+					//if (diag)	cout << Char27out(R5) << "isp2 " << (_popcnt32(R5)) << endl;
+					for (int i6 = i5 + 1; i6 < nt; i6++) {
+						register int R6 = t[i6] | R5;
+						mybv6[nmybv6++] = R6;
+					}
 				}
 			}
 		}
 		else if (ispot == 1) { // valid 2 clues  
 			for (int i3 = 0; i3 < nt; i3++) {
-				tcells[2] = t[i3];
-				int filter = (1 << tcells[0]) | (1 << tcells[1]) | (1 << t[i3]);
-				xindex3[nxindex3++].Open(filter, n3_5,tcells);
-				x_expand_3_5[n3_5++].Add0();
+				register int R3 = t[i3] | R0;
+				myi3[nmyi3++].Open5_6(R3, nmybv5, nmybv6);
 				for (int i4 = i3 + 1; i4 < nt; i4++) {
-					x_expand_3_5[n3_5++].Add1(t[i4]);
+					register int R4 = t[i4] | R3;
 					for (int i5 = i4 + 1; i5 < nt; i5++) {
-						x_expand_3_5[n3_5++].Add2(t[i4], t[i5]);
+						register int R5 = t[i5] | R4;
+						mybv5[nmybv5++] = R5;
+						//if (diag)	cout << Char27out(R5) <<"isp1 " << (_popcnt32(R5)) << endl;
+						for (int i6 = i5 + 1; i6 < nt; i6++) {
+							register int R6 = t[i6] | R5;
+							mybv6[nmybv6++] = R6;
+						}
 					}
 				}
 			}
@@ -246,21 +271,10 @@ next:
 back:
 	if (--s3 >= spb3)goto next;
 	// and set last index
-	xindex3[nxindex3++].Open(0, n3_5,tcells);
+	myi3[nmyi3++].Open5_6(0, nmybv5, nmybv6);
 	//DebugExpand();
 }
-void STD_B1_2::DebugExpand() {
-	cout << "debugexpand nindex=" << nxindex3 << " ntot="<< n3_5 << endl;
-	for (int i = 0; i < nxindex3-1; i++) {
-		XINDEX3 w = xindex3[i];
-		int ideb = w.ideb, iend = xindex3[i+1].ideb;
-		cout << Char27out(w.cellsbf) << "\t" << w.ideb << endl;
-		for (int i = 0; i < 3; i++) {
-			int c = w.tcells[i];
-			if (!(w.cellsbf & (1 << c))) cout << "erreur i=" << i << " c=" << c << endl;
-		}
-	}
-}
+
 
 
 void STD_B1_2::PrintShortStatus() {

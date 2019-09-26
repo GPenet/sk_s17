@@ -150,7 +150,9 @@ void Go_c17_10( ) {
 		int ib3 = perm_ret.i416, ib3a = t416_to_n6[ib3];
 		genb12.bands3[0].InitBand3(ib3, &ze[54], perm_ret);
 		genb12.nband3 = 1;
-		myband1.DoExpandBand();// expand band1
+		tulock.InitBuf();
+		myband1.ExpandBand();// expand band1
+		tulock.Store1();
 		ze[81] = 0;
 		char * ze2 = &ze[82];
 		g17b.p17diag.SetAll_0();
@@ -178,9 +180,9 @@ int G17B::DebugK17M10() {
 	if (GodebugCheckUas("check uas")) return 1;
 	if (debug17 > 2) {
 		cout <<"index band 1"<<endl;
-		myband1.DebugExpand();
+		myband1.DebugExp();
 		cout << "index band 2" << endl;
-		myband2.DebugExpand();
+		myband2.DebugExp();
 
 	}
 	return 0;

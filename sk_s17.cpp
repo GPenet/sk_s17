@@ -25,42 +25,58 @@
 #include "main.h"  // main and main tables and basic brute force
 #include "go_17sol_tables.h"     
 #include "Zh1b2b.h"  // brute force 2 bands  
+extern SGO sgo;
 //_________________ brute force handling 1 2 3 bands 
 extern ZHOU    zhou[50],zhou_i;// , zhou_i, zhou_solve;
 extern ZH_GLOBAL zh_g;
 extern ZH_GLOBAL2 zh_g2;
-extern SGO sgo;
-
 extern ZH2B_GLOBAL   zh2b_g;
 extern ZH2B5_GLOBAL   zh2b5_g;   // 2_5 digits 2 bands
 extern ZH2B_1D_GLOBAL zh2b1d_g;  // one digit 2 bands
-
 extern ZH2B zh2b[40], zh2b_i, zh2b_i1;
 extern ZH2B5 zh2b5[10]; // solved digit per digit
 extern ZH2B_1D zh2b1d[6]; // maxi 6 guesses, one per row
-
 extern ZHONE_GLOBAL   zh1b_g;
 extern ZHONE zhone[20];
 extern ZHONE zhone_i;
 
-
-
-//extern GENUAS_1B genuas1b;
-
+FINPUT finput;
 ofstream  fout1, fout2;
-#include "sk_s17h.h"    
-//XY_EXPAND xye6[2][MAXN6], xye5[2][MAXN5];
+
+#include "sk_s17h.h"   //main classes of the project
+#include "go_17sol_tables.h"
+TU_LOCK tulock;
+TU_GUAN tuguan;
+TU_SMALL tusmall;
 G17B g17b;
+BANDS_AB bands_ab;
+GENUAS_B12 genuasb12;
+GEN_BANDES_12 genb12;
+STD_B1_2 myband1, myband2;
+
+//=== buffers to store valid bands and vectors
+XINDEX3 xep_bufindex3[6000];//band1 band2 dummy band3
+uint32_t xep_buffer5[2*MAXN5];// only bands 1 and 2
+uint32_t xep_buffer6[200 * MAXN6];// bands 1 and 2 + all bands3
+BF128 xep_vectors[200 * MAXN6];// vector 1 bands 3 plus band B
+BF128 xep_vectors2[200 * MAXN6];// vector 2 bands 3 if needed
+
+void TU_LOCK::InitBuf() {//new band 1 + band 2
+	px_index = xep_bufindex3;
+	px_5 = xep_buffer5;
+	px_6 = xep_buffer6;
+}
+void TU_LOCK::InitBuf2() {// new band A + band B
+	pvx1 = xep_vectors;
+	pvx2 = xep_vectors2;
+}
+
+
 uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[40];
 uint64_t p_cpt[40], p_cpt1[20];
 
-FINPUT finput;
 
-#include "go_17sol_tables.h"
 
-STD_B1_2 myband1, myband2;
-GENUAS_B12 genuasb12;
-GEN_BANDES_12 genb12;
 #include "go_17_bands_cpp.h"  
 
 #include "go_17_genb12_cpp.h"     

@@ -152,6 +152,7 @@ extern void Sort_uint32_t(uint32_t * t, uint32_t nt);
 // general correspondance row column box band pattern 
 extern int AddUA64(uint64_t * t, uint32_t & nt, uint64_t ua);
 extern int AddUA32(uint32_t * t, uint32_t & nt, uint32_t ua);
+extern int AddUA32NoSubset(uint32_t * t, uint32_t & nt, uint32_t ua);
 extern int TblMult3[9];  // 3*i
 extern int TblMult9[9];  // 9*i
 extern int C_minirow[81];
@@ -178,6 +179,7 @@ extern int C_div27[81];
 extern int * TblBoard_Block; //  i/27  giving cell -> band 
 extern int C_To128[81];
 extern int From_128_To_81[128];
+extern uint32_t mini_pairs_tripletsbf[36];
 extern int box_col_to_row[512];// Flash transpose a box
 extern int treverse_mini[8];// Flash reverse three bits
 extern int tband_box[6], tband_row[3], tband_box_skrink[3];

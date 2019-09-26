@@ -171,6 +171,23 @@ int AddUA32(uint32_t * t, uint32_t & nt, uint32_t ua) {// ua1x27  + 5 bit length
 	return 1;
 }
 
+int AddUA32NoSubset(uint32_t * t, uint32_t & nt, uint32_t ua) {// ua1x27  + 5 bit length
+	register uint32_t ua1x = ua & BIT_SET_27;
+	for (uint32_t iua = 0; iua < nt; iua++) {
+		register uint32_t R = t[iua];
+		if (R < ua) continue;
+		else if (R == ua) return 0;
+		else {
+			for (uint32_t jua = nt; jua > iua; jua--)t[jua] = t[jua - 1];
+			t[iua] = ua;// new inserted
+			nt++;
+			return 2;
+		}
+	}
+	t[nt++] = ua;// added
+	return 1;
+}
+
 int TblMult3[9] = { 0, 3, 6, 9, 12, 15, 18, 21, 24 };  // 3*i
 int TblMult9[9] = { 0, 9, 18, 27, 36, 45, 54, 63, 72 };  // 9*i
 int C_minirow[81] = {// TblDiv3 as 27 sub table cell to minirow 
@@ -257,7 +274,16 @@ int From_128_To_81[128] = {
 	27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 0, 0, 0, //54 55 dummy cells mode 54 cells
 	54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 0, 0, 0, 0   // 81 dummy cell  mode 81 cells
 };
-
+uint32_t mini_pairs_tripletsbf[36] = {
+	06,05,03,060,050,030,0600,0500,0300,
+	06000,05000,03000,060000,050000,030000,0600000,0500000,0300000,
+	06000000,05000000,03000000,
+	060000000,050000000,030000000,
+	0600000000,0500000000,0300000000,
+	07,070,0700,
+	07000,070000,0700000,
+	07000000,070000000,0700000000,
+};
 int  box_col_to_row[512] = {// transpose a box
 00,01,010,011,0100,0101,0110,0111,02,03,012,013,0102,0103,0112,0113,
 020,021,030,031,0120,0121,0130,0131,022,023,032,033,0122,0123,0132,0133,
