@@ -50,18 +50,9 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		zh2b5_g.modevalid = 0;
 		w.nua = 0;
 		//w.nua_start = ntua2;
+		w.tua= tuguan.pguabuf;
 		ptua2 = w.tua;
 		nua2 = 0;
-		//if (i81>1) continue;
-		if (0) {
-			w.Debug("i81 xx  status");
-			cout << " revised gangster status i81="<<i81 << oct << endl;
-			for (int i = 0; i < 9; i++) 
-				cout << gangb12[i] << "\t" << w.gangcols[i] << endl;
-			cout << dec << endl;
-			//cout << Char2Xout(zh2b_g.fd_revised[0].bf.u64) << " dig0 rev" << endl;
-			//cout << Char2Xout(zh2b_g.fd_sols[1][0].bf.u64) << "      base" << endl;
-		}
 
 		//================== GUA collector 2 bands 
 		GuaCollect(w.digs );
@@ -77,18 +68,14 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 			int fl = 0x1ff ^ floors_4d[i];
 			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
-		//if (nband3 <= 2 && nua2 < 100)
 		SecondSockets2MoreUAs();
 		if (nua2) {
-			tactive2[nactive2++]=i81;
+			//tactive2[nactive2++]=i81;
 			ntua2 += nua2;
-		}
-		//w.nua_end = ntua2;// store the final count
-		w.nua = nua2;
-		if (0) {
-			cout << "try collect socket2 for i81=" << i81 << "\tnua2=" << nua2 << endl;
-			for (uint32_t i =0; i < w.nua; i++)
-				cout << Char2Xout(w.tua[i]) <<" cc="<< (w.tua[i] >>59)<< endl;
+			w.nua = nua2;
+			w.iguan = tuguan.nguan;
+			tuguan.AddGuan(ptua2, nua2,
+				(1 << w.col1) | (1 << w.col2), w.digs, i81);
 		}
 		if (g17b.debug17)Debug17(w);// check all guas are valid for known 17
 	}
@@ -415,6 +402,11 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 				w.valid = 1;
 		}
 		if (!w.valid)continue;
+		// build killer to clear subsets
+		w.killer = zh2b_g.fd_sols[0][w.dig1].bf.u64;
+		w.killer |= zh2b_g.fd_sols[0][w.dig2].bf.u64;
+		w.killer |= zh2b_g.fd_sols[0][w.dig3].bf.u64;
+		w.killer &= band3xBM[(w.col1 / 3) + 3].u64[0];
 		// Setup the perms for gangsters in minirow
 		int bita = 1 << w.dig1, bitb = 1 << w.dig2, bitc = 1 << w.dig3,
 			digs=bita|bitb|bitc;
@@ -425,6 +417,8 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 
 		p = triplet_perms[1];// for per abc -> cab
 		p[0] = bita | bitc; p[1] = bitb | bita; p[2] = bitc | bitb;
+		w.nua = 0;
+		w.tua = tuguan.pguabuf;
 		ptua2 = w.tua;
 		nua2 = 0;
 
@@ -459,12 +453,20 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 			}
 		}
 		if (nua2) {
+			// clean uas not containing killer (subsets of the minirow)
+			int n = 0;
+			for (uint32_t i = 0; i < nua2; i++)
+				if ((ptua2[i] & w.killer) == w.killer)
+					ptua2[n++] = ptua2[i];
+			if (!n)continue;
+			nua2 = n;
 			tactive3[nactive3++] = i81;
 			ntua3 += nua2;
+			w.nua = nua2;
+			w.iguan = tuguan.nguan;
+			int c = w.col1, mini = 7 << c;;
+			tuguan.AddGuan(ptua2, nua2, mini, digs, i81);
 		}
-
-		//w.nua_end = ntua3;// store the final count
-		w.nua = nua2;// store the final count
 	}
 	//cout << "endSecondSockets3Setup ntua3=" << ntua3
 	//	<< " nactive i81=" << nactive3 << endl;

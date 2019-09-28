@@ -55,20 +55,22 @@ GEN_BANDES_12 genb12;
 STD_B1_2 myband1, myband2;
 
 //=== buffers to store valid bands and vectors
-XINDEX3 xep_bufindex3[6000];//band1 band2 dummy band3
+XINDEX3 xep_bufindex3[200*300];//band1 band2 and band3
 uint32_t xep_buffer5[2*MAXN5];// only bands 1 and 2
 uint32_t xep_buffer6[200 * MAXN6];// bands 1 and 2 + all bands3
-BF128 xep_vectors[200 * MAXN6];// vector 1 bands 3 plus band B
-BF128 xep_vectors2[200 * MAXN6];// vector 2 bands 3 if needed
-
+BF128 bB_v128[MAXN6];// Uas vector first 128 uas band B
+VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B
+VECT256 b3_v256_buf[200 * MAXN6];
+XBANDA xbanda[10000]; // band A to cross with band B 6 3 common clues
+GINT64 tempXY[15000];
+TEMPGUAN4 tempguan4[256];
 void TU_LOCK::InitBuf() {//new band 1 + band 2
 	px_index = xep_bufindex3;
 	px_5 = xep_buffer5;
 	px_6 = xep_buffer6;
 }
-void TU_LOCK::InitBuf2() {// new band A + band B
-	pvx1 = xep_vectors;
-	pvx2 = xep_vectors2;
+void TU_LOCK::InitBuf3() {// new band A + band B
+	pvx3 = b3_v256_buf;
 }
 
 

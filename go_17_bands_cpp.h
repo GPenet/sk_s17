@@ -165,7 +165,6 @@ void STD_B416::ExpandBand( ) {// find all 5 and 6 clues solutions
 	myi3 = tulock.px_index;
 	mybv5 = tulock.px_5;
 	mybv6 = tulock.px_6;
-	myvect6 = tulock.pvx1;// lock also vector space
 	nmyi3=nmybv5 = nmybv6 = 0;
 	s3 = spb3;
 	s3->all_previous_cells = 0;

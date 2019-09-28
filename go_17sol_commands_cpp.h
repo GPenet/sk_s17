@@ -8,9 +8,9 @@ const char * libs_c17_00_cpt2g[40] = {
 	"1 total bands 3",//1
 	"2 index 3 entries",//2
 	"3 index 3_5 entries",//3
-	"4 bb crit ",//4
-	"5 bb miss12 ",//5
-	"6 bb miss more ",//6
+	"4 A/X direct ",//4
+	"5 A/X matrix miss12 ",//5
+	"6 First   ",//6
 	"7 calls brute force",//7
 	"8 XY brute force",//8
 	"9 valid brute force",//9
