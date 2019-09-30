@@ -511,6 +511,7 @@ void GEN_BANDES_12::NewBand1(int iw) {
 		cold[i] = 0x1ff ^ myband1.gangster[i];
 	zsol[27] = 0;
 	myband1.ExpandBand( );// expand and set index
+
 	tulock.LockExpand(myband1.nmyi3, myband1.nmybv5, myband1.nmybv6);
 	tulock.Store1();
 	cout << "i1t16=" << i1t16 << " it16=" << it16 

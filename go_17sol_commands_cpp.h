@@ -135,7 +135,7 @@ void Go_c17_10( ) {
 		}
 
 		if (g17b.debug17)
-			cout << ze <<  " to process  n="  << npuz << endl;
+			cout<<"\n\n" << ze <<  " to process  n="  << npuz << endl;
 
 		// =======================morph entry 
 		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
@@ -152,6 +152,7 @@ void Go_c17_10( ) {
 		genb12.nband3 = 1;
 		tulock.InitBuf();
 		myband1.ExpandBand();// expand band1
+		tulock.LockExpand(myband1.nmyi3, myband1.nmybv5, myband1.nmybv6);
 		tulock.Store1();
 		ze[81] = 0;
 		char * ze2 = &ze[82];
@@ -174,18 +175,6 @@ void Go_c17_10( ) {
 		if (!p_cpt2g[i])continue;
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
-}
-int G17B::DebugK17M10() {
-	GodebugInit(0);
-	if (GodebugCheckUas("check uas")) return 1;
-	if (debug17 > 2) {
-		cout <<"index band 1"<<endl;
-		myband1.DebugExp();
-		cout << "index band 2" << endl;
-		myband2.DebugExp();
-
-	}
-	return 0;
 }
 
 
