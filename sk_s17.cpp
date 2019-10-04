@@ -66,7 +66,7 @@ VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B
 VECT256 b3_v256_buf[200 * MAXN6];// guas vectors 6 clues bands 3
 
 XBANDA xbanda[10000]; // band A to cross with band B 6 3 common clues
-GINT64 tempXY[15000];
+GINT64 tempXY[30000];// limit chunkx * chunky here 100*200=20000
 TEMPGUAN4 tempguan4[256];
 
 void TU_LOCK::InitBuf() {//new band 1 + band 2

@@ -8,20 +8,20 @@ const char * libs_c17_00_cpt2g[40] = {
 	"1 total bands 3",//1
 	"2 index 3 entries",//2
 	"3 index 3_5 entries",//3
-	"4 A/X direct ",//4
-	"5 A/X matrix miss12 ",//5
-	"6 First   ",//6
-	"7 calls brute force",//7
-	"8 XY brute force",//8
+	"4 countplus 6 ",//4
+	"5 A/X matrix   ",//5
+	"6 clean entries   ",//6
+	"7 XY raw count/100",//7
+	"8 calls brute force",//8
 	"9 valid brute force",//9
-	"10 critical band3",//10
-	"11 not critical 1",//11
-	"12 not critical 234",//12
-	"13 not critical 56",//13
+	"10 b3 matrix",//10
+	"11 b3 nmiss0",//11
+	"12 b3 nmiss1",//12
+	"13 b3 nmiss2",//13
 	"14 ",//14
-	"15 entry band3 handler excluding critical+ua outfield",//15
-	"16 critical + sub critical",//16
-	"17 add 1 from active",//17
+	"15 ",//15
+	"16 ",//16
+	"17 ",//17
 	"18 n uas at start",//18
 	"19 n gua2s at start  ",//19
 	"20 n gua3s at start  ",//20
@@ -44,7 +44,7 @@ void Go_c17_00( ) {// p2 process
 	cout << sgo.vx[4] << " -v4- 0 if p2a 1 if p2b" << endl;
 
 	int it16_start = sgo.vx[0];
-	g17b.debug17 = g17b.aigstop=0;
+	g17b.debug17 = g17b.debug17_check =   g17b.aigstop=0;
 	g17b.diag = sgo.vx[6];
 	genb12.skip = sgo.vx[2];
 	genb12.last = sgo.vx[3];
@@ -83,7 +83,7 @@ void Go_c17_09() {// p2 process locate
 	cout << sgo.vx[7] << " -v7- band3 searched" << endl;
 	if (!sgo.vx[6] || !sgo.vx[7]) sgo.vx[6] = sgo.vx[7] = 0;
 	int it16_start = sgo.vx[0];
-	g17b.debug17 = 0;
+	g17b.debug17 = g17b.debug17_check=0;
 	g17b.diag = sgo.vx[6];
 	genb12.skip = sgo.vx[2];
 	genb12.last = sgo.vx[3];
@@ -120,8 +120,9 @@ void Go_c17_10( ) {
 		if (npuz <= (int)sgo.vx[2]) continue;
 		if (npuz > (int)sgo.vx[3]) break;
 		g17b.debug17 = sgo.vx[0];
+		g17b.debug17_check = 1;
 		//if (npuz >5) return;
-		cout << " to process  n="<<dec << npuz <<" debug="<< g17b.debug17 << endl;
+		cout << "\n\nto process  n="<<dec << npuz <<" debug="<< g17b.debug17 << endl;
 		long tdeb = GetTimeMillis();
 		//================================ to avoid the 665 case
 		int ncb3 = 0;
@@ -135,7 +136,7 @@ void Go_c17_10( ) {
 		}
 
 		if (g17b.debug17)
-			cout<<"\n\n" << ze <<  " to process  n="  << npuz << endl;
+			cout << ze <<  " to process  n="  << npuz << endl;
 
 		// =======================morph entry 
 		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';

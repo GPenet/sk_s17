@@ -70,6 +70,22 @@ struct VECT256 {// vector for other uas after 3 clues
 	inline void Clear(int i, int j) {	v[i].clearBit(j);	}
 	inline void And(VECT256 &v2) {	v[0] &= v2.v[0]; v[1] &= v2.v[1];}
 	inline int On(int i,int j){return  v[i].On(j);	}
+	inline void Table(int * t, int & n) {
+		n = v[0].Table128(t);
+		if (v[1].isNotEmpty()) {
+			int tu2[128], ntu2 = v[1].Table128(tu2);
+			for (int i = 0; i < ntu2; i++)
+				t[n++] = tu2[i] + 128;
+		}
+	}
+	inline void Not(VECT256 &v2) {	v[0] -= v2.v[0]; v[1] -= v2.v[1];	}
+	void Print(const char * lib) {
+		char ws[129];
+		cout << "V256 status for " << lib<<endl;
+		cout << v[0].String128(ws) << endl;
+		cout << v[1].String128(ws) << endl;
+
+	}
 };
 
 struct MINCOUNT {
@@ -90,6 +106,14 @@ struct MINCOUNT {
 		}
 		minplus = mincount;
 	}
+	GINT64_t  Count_per_stack() {
+		GINT64 cc; cc.u64 = 0;
+		for (int i = 0, st = 0111; i < 3; i++, st <<= 1) {
+			cc.u16[i]= _popcnt32(all_used_minis&st) + 
+				_popcnt32(mini_bf3&st);
+		}
+		return cc;
+	}
 	void Status() {
 		cout << "critical Status mincount ="<<mincount << endl;
 		cout << Char27out(critbf) << " critical bf" << endl;
@@ -107,12 +131,7 @@ struct XBANDA {
 	VECT256 vv5; // vector other uas
 	uint32_t bf5;
 };
-struct SPOT17_NOUAS2_3 {//hosting a classical search with stack limit control
-	int known, active;
-	GINT64  stacks;
-	int * tua, nua;
-	void newspot(int * oua, int onua, SPOT17_NOUAS2_3 * sp, int cell, int bit = 0);
-};
+
 struct G17TMORE{// FIFO table of more for bands 1+2
 	uint64_t  t[G17MORESIZE];
 	int nt, maxt, curt;
@@ -242,9 +261,9 @@ struct TEMPGUAN4 {// four columns active sockets
 };// not more than 256 including 2/3 columns
 
 struct GUAN {// one occurrence of the active guan 
-	uint64_t *tua, killer;
+	uint64_t *tua, *tuar, killer;
 	uint32_t colbf, digsbf, ncol, // 2-4 cols
-		*tuar, nua, nuar, nfree;
+		 nua, nuar, nfree;
 	int i81;// i81 or pattern (if 4 columns)
 	void Enter(uint64_t *t, uint32_t n, uint32_t cbf,
 		int32_t dbf, uint32_t ind) {
@@ -268,12 +287,6 @@ struct GUAN {// one occurrence of the active guan
 	}
 };
 
-struct GUANB3 {//valid guan for a band 3
-	BF128 v[2]; // active guan 256 bits
-	BF128 vcells[27][2];
-	BF128 * tv6a, *tv6b, *tv7a, *tv7b;
-	uint32_t ua[256]; // corresponding uas if active
-};
 // standard first band (or unique band)
 struct STD_B416 {
 	XINDEX3 *myi3;// index
@@ -346,7 +359,9 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 	}guas;
 	int minirows_bf[9];
 	int triplet_perms[9][2][3];
-	VECT256 v_active_guas,*tvv6;
+	VECT256 v_active_guas,*tvv6,
+		vag2,vag3,vag_AB;// active pair triplet active after AB
+	MINCOUNT smin;
 		//BF128 tbands_UA4_6s, tbands_pairs, tbands_triplets;
 	//int tuas46[81];
 	//_______________________
@@ -361,6 +376,7 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 		for (int i = 0; i < 81; i++) if (guas.ua_triplet[i] == bf) return i;
 		return -1;
 	}
+	void SetUpMincountAB();
 	void PrintB3Status();
 };
 
@@ -525,15 +541,15 @@ struct GEN_BANDES_12 {// encapsulating global data
 };
 
 struct G17B3HANDLER {
+	MINCOUNT smin;
 	int known_b3, rknown_b3, active_b3,   ib3, nb3,
-		active_sub, ndead, wactive0, nmiss, ncritical,
+		active_sub, ndead, wactive0, nmiss,
 		irloop, wua, stack;
-	uint32_t mini_bf1, mini_bf2, mini_bf3,pairsbf,  pairs27, mini_triplet,
-		*uasb3if, nuasb3if, *uasb3of, nuasb3of,andoutf;
+	uint32_t *uasb3if, nuasb3if, *uasb3of, nuasb3of,andoutf;
 	GINT64 stack_count;
 	int diagh;
 	// ================== entry in the proces
-	void Init(int i);
+	void Init( );
 	uint32_t IsMultiple(int bf);
 	int BuildIfShortB3();
 	int ShrinkUas1();
@@ -544,13 +560,10 @@ struct G17B3HANDLER {
 	void CriticalLoop();
 	void CriticalExitLoop();
 	void Critical_0_UA();
-	void CriticalFinalCheck();
 	//===================== process not critical
+	void Go_miss1_b3();
+	void Go_miss2_b3();
 	void Go_Not_Critical_missn();
-	//==================== process subcritical no cell added outside the GUAs field
-	void SubMini( int M, int mask);
-	void Go_Subcritical();
-	void Go_SubcriticalMiniRow();
 	//===============  debugging 
 	void PrintStatus();
 
@@ -606,18 +619,20 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void DebugIfOf();
 	}sbb;
 	G17TMORE moreuas_AB;
+	MORE32 moreuas_b3, moreuas_b3_small;
 	uint32_t ni3, mode_ab, ia, ib,myuab,
 		indd,indf,ncluesbandb,stack_filter,
 		nxbanda,nxy_filt1;// bufferstoring AB/XY passing filt1
-	GINT64 stack_countba, stack_count, stack_countf;
+	GINT64  stack_count, stack_countf;
 	XINDEX3 * myi3,wi3;
 	uint32_t *mybv5,bf3, bf5;
 	STD_B1_2 * mybb;
 	//======= band B initial infield outfield and more outfield table
 	uint32_t btuaif[256], btuaof[3000], tuaif[3000], 
 		nbif,nbof, andoutf;
+	uint32_t i3, i5; //have index in main loop available for debugging
 	uint32_t more_of[128], nmoreof, more_if[128], nmoreif;
-	MINCOUNT mB;
+	MINCOUNT mB,smin;
 	// expansion 
 	int known_bb, rknown_bb, active_bb,
 		active_sub, ndead, wactive0,
@@ -633,6 +648,8 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	int ncluesa, nclues;
 	uint32_t  bfA,bfB;
 	//==================== current band 3 to process
+	//VECT256 cur_vb3;
+	int cur_ib;
 	uint32_t tcluesb12[20], ncluesb3;
 	int  ntb3, nmiss;
 	uint32_t mini_bf1, mini_bf2, mini_bf3, pairsbf, 
@@ -645,16 +662,13 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	void Go_Matrix_X5_Y6();
 	inline void EnterTempxy(uint32_t bf);
 	void CleanTempXY();
+	int GetNextIb3();// return -1 if none 
+	void MatrixB3( STD_B3 &  myb3);
+	void FinalCheckB3(uint32_t bfb3);
 
-	void AddMini(int imini, uint32_t ua);
-	int Init3_5clues();
 	int IsMultiple_bb(int bf,int diag=0);
 	void CriticalFinalCheck_bbx(int bf);
-	void GuasCollect(int bf);
-	int SetUpGuas2_3(int ib3);
-	int EndCollectBand3(int ib3);
-	void GoBand3(int ib3);
-	void ExpandBand3();
+	void GoBand3();
 	int BuildUasB3_in(uint32_t known, uint32_t field);
 };
 struct TU_LOCK {// current pointer to buffer for bands expansion
@@ -749,12 +763,11 @@ struct TU_SMALL {// handling band A band B smaller sub lots
 
 
 struct TU_GUAN {// GUAN process (used GUA all kinds)
-	GUANB3 guanb3[256];
 	GUAN tguan[256], guanw;
 	uint32_t nguan;
 	uint32_t ng2, ng3;// debugging only
 	uint64_t  guabuf[10000], *pguabuf;
-	uint32_t  guabufr[5000], *pguabufr;
+	uint64_t  guabufr[5000], *pguabufr;
 	VECT256 vv, vvcells[54], vA, vB;
 	void AddGuan(uint64_t *t, uint32_t n, uint32_t cbf,
 		int32_t dbf, uint32_t ind) {
@@ -770,9 +783,16 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 	}
 	void BuildCellKillersVector();
 	void ApplyGuanToBand3(int ib3);
-	void InitB_Guas();
+	void InitB_Guas();// after 3 clues A reduce tables
+	void InitC_Guas();// after 6 clues B gangster vector
 	void Debug1() {
 		for (uint32_t i = 0; i < nguan; i++)
+			tguan[i].Debug1Guan(i);
+	}
+	void DebugvB() {
+		cout << " guan actifs en vB" << endl;
+		for (uint32_t i = 0; i < 128; i++)
+			if(vB.On(0,i))
 			tguan[i].Debug1Guan(i);
 	}
 };
@@ -781,7 +801,7 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
   
 struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	BF128 p17diag;// known 17 pattern for tests
-	int b3lim, debug17, diag, diagbug, aigstop,
+	int b3lim, debug17,debug17_check, diag, diagbug, aigstop,
 		npuz, a_17_found_here;
 	uint32_t	iband1,iband2;
 	G17B3HANDLER g17hh0;
@@ -796,15 +816,7 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	void GoM10Uas();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void GoM10_guas_four_columns();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void Go();
-	/*
-	inline void SetUp(BANDS_AB::BANDB * bb){
-		bb->tuaof = bands_ab.btuaof;
-		bands_ab.ncluesb3 = 6;
-	}
-	*/
-
-
-		
+			
 	//================ debugging code
 	inline uint32_t k17x(int ix) {	return p17diag.bf.u32[ix];	}
 
