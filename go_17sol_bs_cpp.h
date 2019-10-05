@@ -1441,7 +1441,8 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 		register int  Rfilt = sb3.smin.critbf;
 		register uint32_t Rfstk = fstk;
 		int * ua_46 = sb3.guas.ua_pair; // ua 4/6 patterns
-		uint32_t ua,andout= fstk,nfree=6-sb3.smin.mincount;
+		uint32_t ua,nfree=6-sb3.smin.mincount;
+		b3_andout = fstk;
 		{// first sockets 2 and sockets 4
 			for (int itu = 0; itu < ntu; itu++) {
 				int iguan = tu[itu];
@@ -1461,7 +1462,7 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 				else {
 					Ru &= Rfstk;
 					if (!Ru) goto nextband;
-					andout &= Ru;
+					b3_andout &= Ru;
 					Ru |= _popcnt32(Ru) << 27;
 					AddUA32(uasb3_2, nuasb3_2, Ru);
 				}
@@ -1470,7 +1471,7 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 		if (locdiag)cout << nuasb3_1 << " " << nuasb3_2 << " if of after guas" << endl;
 		if (nuasb3_2) {// check the limit 6
 			if (!nfree) continue;
-			if ((!andout) && nfree == 1) continue;
+			if ((!b3_andout) && nfree == 1) continue;
 		}
 		{
 			// add now band 3 uas
@@ -1486,7 +1487,7 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 				else {
 					Ru &= Rfstk;
 					if (!Ru) goto nextband;
-					andout &= Ru;
+					b3_andout &= Ru;
 					Ru |= _popcnt32(Ru) << 27;
 					AddUA32(uasb3_2, nuasb3_2, Ru);
 				}
@@ -1497,7 +1498,7 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 		if (nuasb3_2) {// check again the limit 6
 			if (!nfree) continue;
 			sb3.smin.minplus++;
-			if ((!andout)) {
+			if ((!b3_andout)) {
 				if( nfree == 1) continue;
 				sb3.smin.minplus++;
 			}
@@ -1671,8 +1672,8 @@ void BANDS_AB::GoBand3() {
 	hh0.smin.Status();
 	hh0.diagh = 1;// sbb.diag;
 	if(!nmiss)hh0.Go_Critical();
-	else hh0.Go_Not_Critical_missn();
-
+	else if (nmiss==1)	hh0.Go_miss1_b3();
+	else hh0.Go_miss2_b3();
 }
 int  BANDS_AB::BuildUasB3_in(uint32_t known, uint32_t field) {
 	nuas_in = 0;
@@ -1959,7 +1960,7 @@ void G17B3HANDLER::Init( ) {
 	smin = bab.smin;
 	uasb3of = bab.uasb3_2;	nuasb3of = bab.nuasb3_2;
 	uasb3if = bab.uasb3_1;	nuasb3if = bab.nuasb3_1;
-
+	andoutf = bab.b3_andout;
 	int tbitsrows[8] = { 0, 07, 07000, 07007, 07000000, 07000007, 07007000, 07007007 };
 	known_b3 = rknown_b3 = 0;
 	ndead = BIT_SET_27;
@@ -2323,6 +2324,53 @@ void G17B3HANDLER::Go_Not_Critical_missn() {
 		}
 	}
 }
+void G17B3HANDLER::ShrinkUasOfB3() {
+	if (known_b3) {// shrink the out field table
+		uint32_t * tn = &uasb3of[nuasb3of], n = 0;
+		register uint32_t Ra = wactive0,
+			Rfilt = known_b3;
+		andoutf = BIT_SET_27;
+		for (uint32_t iua = 0; iua < nuasb3of; iua++) {
+			register int Ru = uasb3of[iua];
+			if (Ru & Rfilt) continue;
+			Ru &= Ra;
+			if (!Ru)return; // empty need at least one outfield
+			andoutf &= Ru;
+			Ru |= _popcnt32(Ru) << 27;
+			AddUA32(tn, n, Ru);
+		}
+		uasb3of = tn;
+		nuasb3of = n;
+	}
+}
+
+void G17B3HANDLER::Go_miss1_b3() {// not called if more than 1 needed
+	uint32_t wua = wactive0;
+	ShrinkUasOfB3();// if known from up stream
+	wua &= andoutf;
+	if (diagh) cout << Char27out(wua) << " nmiss1 b3 wua" << endl;
+	if (wua) { // apply first UA to use or all out field cells
+		uint32_t res;
+		while (bitscanforward(res, wua)) {
+			int bit = 1 << res; wua ^= bit; wactive0 ^= bit;
+			G17B3HANDLER hn = *this;	hn.nmiss--;	hn.known_b3 |= bit;
+			hn.Go_Critical();
+		}
+	}
+}
+void G17B3HANDLER::Go_miss2_b3() {
+	uint32_t wua = wactive0 & uasb3of[0];// use first ua  
+	if (diagh) cout << Char27out(wua) << " nmiss2 b3 wua" << endl;
+	if (wua) { // apply first UA to use or all out field cells
+		uint32_t res;
+		while (bitscanforward(res, wua)) {
+			int bit = 1 << res; wua ^= bit; wactive0 ^= bit;
+			G17B3HANDLER hn = *this;	hn.nmiss--;	hn.known_b3 |= bit;
+			hn.Go_miss1_b3();
+		}
+	}
+}
+
 
 
 //================ debugging code

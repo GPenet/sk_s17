@@ -561,6 +561,7 @@ struct G17B3HANDLER {
 	void CriticalExitLoop();
 	void Critical_0_UA();
 	//===================== process not critical
+	void ShrinkUasOfB3();
 	void Go_miss1_b3();
 	void Go_miss2_b3();
 	void Go_Not_Critical_missn();
@@ -650,13 +651,10 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	//==================== current band 3 to process
 	//VECT256 cur_vb3;
 	int cur_ib;
-	uint32_t tcluesb12[20], ncluesb3;
-	int  ntb3, nmiss;
-	uint32_t mini_bf1, mini_bf2, mini_bf3, pairsbf, 
-		pairs27, mini_triplet;
-	uint32_t all_used_minis, mincount;
+	uint32_t tcluesb12[20], ncluesb3x;
+	uint32_t   nmiss;
 	uint32_t uasb3_1[2000], uasb3_2[2000],uas_in[2000], 
-		nuasb3_1, nuasb3_2,nuas_in;
+		nuasb3_1, nuasb3_2,nuas_in,b3_andout;
 
 	void Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode);
 	void Go_Matrix_X5_Y6();
