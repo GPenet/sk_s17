@@ -7,84 +7,82 @@
 //536435903110145
 //#define DEBUGLEVEL 10  nb12=3461507
 //123456789456789123789132564268591437341627895597843216634278951815964372972315648;
-//1....6...4......2.....3.5.....59........2...........16.....89.1..5.......72......; 189; 339; 341; 6
+//1....6...4......2.....3.5.....59........2...........16.....89.1..5.......72......; 189; 339; 341; 6ua < 12 to add   clean
 
 
 //___ start process expand bands collect uas guas ...
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
 	if (aigstop)return;
-	const char * diagband ="268591437341627895597843216";
-	const char * diagpuz = "1....6...4......2.....3.5.....59........2...........16.....89.1..5.......72......";
+	const char * diagband = "349628571586371492712945863"; // la bonne
+	//const char * diagband =   "349628517586371492712945863"; // le bug
+	const char * diagband3 = "265713948834592617971864325";
+	const char * diagpuz = ".2..5....4....9.3.......1..3.9..8.......7...2..............39..........7.7...4..5";
 	diag = diagbug = 0;
-	if (diag )cout << "entry m10 nb12=" << genb12.nb12 << " nbands3=" << genb12.nband3 << " p_cpt2g[0]=" << p_cpt2g[0] << endl;
-	if (genb12.nb12 == sgo.vx[6]) diagbug = 1;
+	//if (!strcmp(diagband, myband2.band)) {
+
+	if (0){//(!strcmp(diagband, myband2.band)) {
+		//if (strcmp(diagband, myband2.band)) return;
+		cout << myband2.band << "go band2 id=" << myband2.i416 << endl;
+		DebugGetPuz(diagpuz);
+		diagbug = 2;
+	}
+	else {
+		//if (1) return;
+		if (genb12.nb12 == sgo.vx[6]) diagbug = 1;
+		cout << myband2.band << "go band2 id=" << myband2.i416 << endl;
+	}
 	p_cpt2g[0] ++;
 	p_cpt2g[1] +=genb12.nband3;
 	if (genb12.nband3 > p_cpt2g[23])	p_cpt2g[23] = genb12.nband3;
-	if (diag>1) {
-		if (strcmp(diagband, myband2.band)) return;
-		cout << "entry m10 nb12=" << genb12.nb12 << endl;
-		cout << "this is the band in diag" << endl;
-		if (diag == 2) {
-			p17diag.SetAll_0();
-			cout << diagpuz << " puz known" << endl;
-			for (int i = 0; i < 81; i++) if (diagpuz[i] != '.')
-				p17diag.Set_c(i);
-		}
-	}
+
 	if (g17b.debug17) diag = diagbug = g17b.debug17;
 	//______ true start band 2 expand
 	tulock.Restore1();	
 	myband2.ExpandBand();// expand band2
 	if (!(myband1.nmybv5 | myband2.nmybv5)) return; // no 656 no 566
 	tulock.LockExpand(myband2.nmyi3, myband2.nmybv5, myband2.nmybv6);
-	if (g17b.debug17) {
-		cout <<"b1 i416="<< myband1.i416 << " b2 i416=" << myband2.i416
-			<< " n5b1=" << myband1.nmybv5 << " n5b2=" << myband2.nmybv5 << endl;
-		if (0 &&g17b.npuz == 1025) {
-			myband1.DebugExp();
-			//myband1.DebugIndex();
-			if (1) {
-				cout << "band 1 partiel  6clues" << endl;
-				uint32_t * t = myband1.mybv6,
-					nd=7285,nf=7715;
-				for (uint32_t i = nd; i < nf;i++)
-					cout << Char27out(t[i]) << endl;
+	if (0 &&diagbug == 2) {
+		GodebugFindKnown17();
+		myband1.DebugIndex();
+	}
+
+	//================= expand 6 for bands 3
+
+	nb3 = genb12.nband3;
+	for (int ib3 = 0; ib3 < nb3; ib3++) {// lock only 6 clues 
+		debugb3 = -1;
+		genb12.bands3[ib3].ExpandBand();// expand band3
+		tulock.LockExpand(genb12.bands3[ib3].nmyi3, 0, genb12.bands3[ib3].nmybv6);
+		if (diagbug) {
+			genb12.bands3[ib3].DebugExp();
+			if (strcmp(diagband3, genb12.bands3[ib3].band) == 0) {
+				cout << "this is the expected band" << endl;
+				debugb3 = ib3;
 			}
-			//myband1.Debug6();
 		}
-		if (GodebugFindKnown17()) {
-			cout << "failed to find the expected 17 in expanded bands" << endl;
-			return;
-		}
-		else cout << iband1 << " " << iband2 << " seen solution" << endl;
-
 	}
+
 	GoM10Uas();//expand bands 3  collect UAs 
+	if (g17b.debug17) if (DebugK17M10()) return;
 
-
-	if (g17b.debug17 > 1) {
-		if (DebugK17M10()) return;
-
-		//g17b.a_17_found_here = 1;
-		//return;
+	if (0) {
+		g17b.a_17_found_here = 1;
+		cout << "nsmall1=" << tusmall.nsmall1 << " nsmall2=" << tusmall.nsmall2 << endl;
+		return;
 	}
+
 	p_cpt2g[18] += genuasb12.nua;
 	p_cpt2g[19] += genb12.ntua2;
 	p_cpt2g[20] += genb12.ntua3;
+	if (1) 		GodebugInit(0);
 	Go();// standard entry point for all 
 }
 void G17B::GoM10Uas() {
-	int nb3 = genb12.nband3;
-	//==== expand 6 for bands 3
-	for (int ib3 = 0; ib3 < nb3; ib3++) {// lock only 6 clues 
-		genb12.bands3[ib3].ExpandBand();// expand band3
-		tulock.LockExpand(genb12.bands3[ib3].nmyi3, 0, genb12.bands3[ib3].nmybv6);
-		genb12.bands3[ib3].DebugExp();
-	}
 	//=========================== collect UAs  old process 
 	zh1b_g.modegua = 0;//must be to activate filter in UAs b12 more
+	cout << " call init gen test sockest 2 4 bands 12" << endl;
 	if (genuasb12.Initgen()) return;
+
 	// extract small uas 
 	tusmall.BuildSmallUas();
 	genb12.BuildGang9x3();
@@ -94,7 +92,6 @@ void G17B::GoM10Uas() {
 	tuguan.ng2 = tuguan.nguan;
 	genb12.SecondSockets3Setup();// collect GUA3s 
 	tuguan.ng3 = tuguan.nguan- tuguan.ng2;
-
 	// setupsockets common to all band3
 	isguasocket2all = genb12.bands3[0].guas.isguasocket2;
 	isguasocket3all = genb12.bands3[0].guas.isguasocket3;
@@ -103,15 +100,16 @@ void G17B::GoM10Uas() {
 		isguasocket3all &= genb12.bands3[ib3].guas.isguasocket3;
 	}
 	// ===== add new guas four cells four columns 2 boxes 
-	GoM10_guas_four_columns();
+	//GoM10_guas_four_columns();
 	tuguan.BuildCellKillersVector();
+
 	//=== prepare the bands 3 valid guans and vectors
 	tulock.InitBuf3();
 	for (int ib = 0; ib < genb12.nband3; ib++) {
 		tuguan.ApplyGuanToBand3(ib);
 	}
 }
-void TU_SMALL::BuildSmallUas() {// find sub uas size 4 in the limit of 28 (64-36)
+void TU_SMALL::BuildSmallUas() {// find sub uas size 4 in the limit of 128 (64-36)
 	nsmall1 = nsmall2 = 0;
 	for (uint32_t i = 0; i < genuasb12.nua; i++) {
 		uint64_t R = genuasb12.tua[i] & BIT_SET_2X;
@@ -282,6 +280,15 @@ void TU_GUAN::ApplyGuanToBand3(int ib3) {
 			}
 		}
 	}
+	/*
+	if (g17b.diagbug == 2 && g17b.debugb3 == ib3) {
+		cout << "status of vag2 vag3 for the expected band" << endl;
+		b.vag2.Print(" vag2");
+		b.vag3.Print(" vag3");
+		b.v_active_guas.Print(" v_active_guas");
+	}
+	*/
+
 	//_____________ setup the cells vector for the given  band 3
 	memset(vcells, 255, sizeof vcells);
 	uint32_t cc;
@@ -341,7 +348,7 @@ void G17B::Go(){// start loops on 3_5 clues
 
 //_______________ processing bandA bandB (5clues 6 clues)
 void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
-	if (g17b.debug17)cout << "entry BANDS_AB.go i=" <<i << endl;
+	if (g17b.debug17|| g17b.diagbug)cout << "entry BANDS_AB.go i=" <<i << endl;
 	tulock.InitBuf3();// init/reinit vector buffers use.
 	mybb = &bb;
 	ni3 = ba.nmyi3-1;
@@ -358,13 +365,22 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 	stack_filter = 6;
 	// loop on index 3 
 	for (i3 = 0; i3 < ni3; i3++) {
+		indd = myi3[i3 ].ideb5;
+		indf = myi3[i3 + 1].ideb5;
+		if (indd == indf)continue;
 		moreuas_AB.Init();
+		moreuas_AB_big.Init();
 		wi3 = myi3[i3];
 		bf3 = wi3.cellsbf;
 		p_cpt2g[2]++;
 		if (g17b.debug17) {//skip if not ok
 			if (wi3.cellsbf & (~g17b.p17diag.bf.u32[ia])) continue;
 			cout << Char27out(bf3) << "right i3=" << i3<<" ia="<<ia<< endl;
+		}
+		if (g17b.diagbug>=2) {//skip if not ok
+			if( !(wi3.cellsbf & (~g17b.p17diag.bf.u32[ia])) )
+			cout << Char27out(bf3) << "right i3=" << i3 << " ia=" << ia << endl;
+			//else continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		}
 
 		tusmall.BuildInit3cluesA(bf3);
@@ -378,27 +394,30 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 			cout << Char64out(tusmall.vsm3.bf.u64[0]);
 			cout << Char64out(tusmall.vsm3.bf.u64[1]) << " vsm3" << endl;
 		}
-		moreuas_AB.Init();
-		indf = myi3[i3 + 1].ideb5;
-		//cout  << "i3=" << i3 << " inddeb="<< wi3.ideb5 
+		//if (i3 == 13) 
+		//cout  << "i3=" << i3 << " inddeb="<< wi3.ideb5
 		//	<< " indf="<< indf << " size5=" <<indf- wi3.ideb5 << endl;
 
 
 		nxbanda = 0;
 		nxy_filt1 = 0;// init storage of XY passing first filter
 		// _________________loop on remaining 2 clues
-		for ( i5 = wi3.ideb5; i5 < indf; i5++) {
+		for ( i5 = indd; i5 < indf; i5++) {
 			p_cpt2g[3]++;
 			bf5 = mybv5[i5];
 			if (g17b.debug17) {//skip if not ok
 				if (bf5 & (~g17b.p17diag.bf.u32[ia])) continue;
 				cout << Char27out(bf5) << "right bandA i5=" << i5 << endl;
 			}
-			//if(i3==27 && ia==1)cout << Char27out(bf5) << " i5=" << i5 << endl;
+			if (g17b.diagbug >= 2) {//skip if not ok
+				if(! (bf5 & (~g17b.p17diag.bf.u32[ia])))  
+				cout << Char27out(bf5) << "right bandA i5=" << i5 << endl;
+				//else continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			}
+			//if(i3==43 && ia==0)cout << Char27out(bf5) << " i5=" << i5 << endl;
 			ncluesa = 0;
 			BitsInTable32((int *)tclues, ncluesa, bf5);
 			tusmall.BuildInit5cluesA(bf5);
-			//if (i3 == 27 && ia == 1)cout  << " i5back init5" << endl;
 			if (g17b.debug17) {//skip if not ok
 				cout << Char27out(bf5) << " 5 clues count="
 					<< tusmall.smin.mincount << "\tcountplus="
@@ -407,13 +426,12 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 				if (g17b.debug17 > 1)cout << Char64out(tusmall.vsm5.bf.u64[1]) << " vsm5" << endl;
 				if (tusmall.smin.mincount) {
 					tusmall.smin.Status();
-					if(tusmall.smin.minplus==6)
-					fout1 << g17b.npuz << ";" << tusmall.smin.mincount
-						<< ";" << tusmall.smin.minplus << endl;
+					//if(tusmall.smin.minplus==6)
+					//fout1 << g17b.npuz << ";" << tusmall.smin.mincount
+					//	<< ";" << tusmall.smin.minplus << endl;
 				}
 			}
-
-			if (0 &&i5 == 2998 && ia == 1) {
+			if (i5 == 312 && ia == 1) {
 				cout << Char27out(bf5) << " 5 clues count="
 					<< tusmall.smin.mincount << "\tcountplus="
 					<< tusmall.smin.minplus << endl;
@@ -421,12 +439,14 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 				cout << Char64out(tusmall.vsm5.bf.u64[1]) << " vsm5" << endl;
 				if (tusmall.smin.mincount) 			tusmall.smin.Status();
 			}
+			/*
+*/
 			//____ 
 			if (tusmall.smin.minplus > 6) continue; //nothing to do
 			if (tusmall.smin.minplus == 6) {// expand direct
 				p_cpt2g[4]++;
 				GoExpandB();
-				// process ans call clean if limit buffer reached
+				// process and call clean if limit buffer reached
 				//if (Init3_5clues()) sbb.Go();
 				//g17b.a_17_found_here = 1;
 				//return;
@@ -443,10 +463,15 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 					w ^= 1 << cca; //clear bit
 					myxba.vv5.And(tusmall.vv_cellsA[cca]);
 				}
-
+				/*
+				if (i5 == 59 && ia == 0) {
+					cout << Char32out(myxba.vv5.v[0].bf.u32[0])<<" first 32 others"<<endl;
+				}
+				*/
 			}
 			if (g17b.aigstop)return;
 		}// end lop 3 to 5 clues in band A
+		/*
 		if (0 &&g17b.debug17) {// diag known
 			if (bands_ab.ia != 1) return;
 			cout << " check of expected XY ia=1" << endl;
@@ -459,9 +484,11 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 			cout << w.vsm5.String128(ws) << "A vector 128"<<endl;
 			cout << bB_v128[i6].String128(ws) << "B vector 128"<<endl;
 		}
-		if (0 &&i3 == 27 && ia == 1) {
+		if ( ia == 1) {
 			cout << "exit loop 5 nxbanda=" << nxbanda << endl;
+			xbanda[0].Debug();
 		}
+		*/
 		if (nxbanda)Go_Matrix_X5_Y6();// now critical code, crossing and Y
 		CleanTempXY();
 
@@ -469,20 +496,22 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 	}
 }
 void BANDS_AB::Go_Matrix_X5_Y6() {// now critical code, crossing and Y
-	int locdiag = 0;
+	//int locdiag = 0;
+	//XBANDA * rlocdiag=0;
 	if (g17b.debug17>1) {
 		cout << "entry Go_Matrix_X5_Y6() nxbanda=" << nxbanda << endl;
 	}
-	//if (i3 == 27 && ia == 1) locdiag = 1;
+	//if (i5 == 312 && ia == 1) 
+	//if (ia == 1) 	locdiag = 1;
 #define XCHUNK 100
 #define YCHUNK 200
 	int ny6 = mybb->nmybv6;
 	int ideby = 0, iendy = YCHUNK;
 	if (iendy > ny6)iendy = ny6;
-	if (locdiag)cout << "entry Go_Matrix_X5_Y6() nxbanda=" << nxbanda 
-		<<"ny6=" <<ny6 << endl;
+	//if (locdiag)cout << "entry Go_Matrix_X5_Y6() nxbanda=" << nxbanda 
+	//	<<" ny6=" <<ny6 << endl;
 	while (ideby < ny6) { //Y chunk
-		if (locdiag)cout << " ycollect() ideb="<<ideby<<"  n="<<iendy-ideby << endl;
+		//if (locdiag)cout << " ycollect() ideb="<<ideby<<"  n="<<iendy-ideby << endl;
 		XBANDA ycollect[YCHUNK];// collect y data in a fix area
 		{	register uint32_t *R6 = &mybb->mybv6[ideby];
 			register BF128 * Rv128 = &bB_v128[ideby];
@@ -493,9 +522,18 @@ void BANDS_AB::Go_Matrix_X5_Y6() {// now critical code, crossing and Y
 				Ra->bf5 = *R6;
 				Ra->vsm5 = *Rv128;
 				Ra->vv5 = *Rv256;
+				/*
+				if (iy == 3405) {
+					cout <<Char27out(Ra->bf5)<< " status 3405 ycollect" << endl;
+					char ws[129];
+					cout << Ra->vsm5.String128(ws) << " vector for i6 " << endl;
+					Ra->vv5.Print(" vv5");
+					rlocdiag = Ra;
+				}
+				*/
 			}
 		}
-		if (locdiag)cout << "exit ycollect()" << endl;
+		//if (locdiag)cout << "exit ycollect()" << endl;
 		uint32_t idebx = 0, iendx = XCHUNK;
 		if (iendx > nxbanda)iendx = nxbanda;
 		while (idebx < nxbanda) {// X chunk  
@@ -505,8 +543,25 @@ void BANDS_AB::Go_Matrix_X5_Y6() {// now critical code, crossing and Y
 			for (; Ry < Ryend;  Ry++) {
 				register XBANDA * Ra = rxd;
 				for (; Ra < Rendx;  Ra++) {
+					/*
+					if (locdiag && rlocdiag == Ry) {
+						cout << "tchecking the good one" << endl;
+						char ws[129];
+						cout << Ra->vsm5.String128(ws) << " vector x " << endl;
+						cout << Ry->vsm5.String128(ws) << " vector for i6 " << endl;
+						Ra->vv5.Print("X print");
+						Ry->vv5.Print("Y print");
+						if ((Ra->vsm5 & Ry->vsm5).isEmpty()) {
+							if (Ra->vv5.IsEmpty(Ry->vv5)) {
+								cout << "should be ok nxy_filt1=" << nxy_filt1 << endl;
+							}
+						}
+						rlocdiag = 0;
+					}
+					*/
 					if ((Ra->vsm5 & Ry->vsm5).isEmpty()) {
 						if (Ra->vv5.IsEmpty(Ry->vv5)) {
+							//if (locdiag)cout << "store nxy_filt1=" << nxy_filt1 << endl;
 							// passing first filter, store it
 							GINT64 & w = tempXY[nxy_filt1++];
 							w.u32[0] = Ra->bf5;
@@ -515,7 +570,7 @@ void BANDS_AB::Go_Matrix_X5_Y6() {// now critical code, crossing and Y
 					}
 				}
 			}// end of a matrix XY
-			if (locdiag)cout << "nxy_filt1=" << nxy_filt1 << endl;
+			//if (locdiag)cout << "nxy_filt1=" << nxy_filt1 << endl;
 			if (nxy_filt1 > 1000) CleanTempXY();
 			idebx = iendx; iendx += XCHUNK;
 			if (iendx > nxbanda)iendx = nxbanda;
@@ -523,10 +578,8 @@ void BANDS_AB::Go_Matrix_X5_Y6() {// now critical code, crossing and Y
 		ideby = iendy; iendy += YCHUNK;
 		if (iendy > ny6)iendy = ny6;
 	} 
-	if (g17b.debug17>1) {
-		cout << "exit Go_Matrix_X5_Y6() nxy_filt1=" << nxy_filt1 << endl;
-	}	
-	if (locdiag)cout << "exit Go_Matrix_X5_Y6() nxy_filt1=" << nxy_filt1 << endl;
+	if (g17b.debug17>1) 	cout << "exit Go_Matrix_X5_Y6() nxy_filt1=" << nxy_filt1 << endl;
+	//if (locdiag)cout << "exit Go_Matrix_X5_Y6() nxy_filt1=" << nxy_filt1 << endl;
 
 }
 void TU_SMALL::Build_B_Initial(int ib) {
@@ -576,21 +629,28 @@ void TU_SMALL::Build_B_Initial(int ib) {
 					goto nextiua;
 				}
 			}
-			//cout << "pas trouve" << endl;
-
 		}
 		{// not in the sm list store in in ua/ub mode
 			Ub <<= 32;
 			if (n_others_b < 500)t_others_b[n_others_b++].u64 = Ua + Ub;
-			continue;
 		}
 	nextiua:;
 	}
 	for (uint32_t ism = 0; ism < nsm; ism++) {// set all killers
 		sm[ism].SetKiller(ism);
-		//sm[ism].Debug1();
+		//if (g17b.diagbug)sm[ism].Debug1();
 	}
-	if (g17b.debug17)cout << "end Build_B_Initial  uas others n=" << n_others_b << endl;
+	/*
+	if (g17b.debug17 || g17b.diagbug) {
+		cout << "end Build_B_Initial  uas others n=" << n_others_b
+			<< " nsm= " << nsm << endl;
+		if (g17b.diagbug) {
+			cout << " other table" << endl;
+			for (uint32_t i = 0; i < 2;i++)//n_others_b; i++)
+				cout << Char2Xout(t_others_b[i].u64) << endl;
+		}
+	}
+	*/
 	//______________ Build vectors for band A  and band B
 	vsm = maskLSB[nsm];
 	memset(vcellskill, 255, sizeof vcellskill);// all bits to 1
@@ -663,6 +723,13 @@ void TU_SMALL::BuildInit3cluesA(uint32_t bfA) {// reduce tables
 	for (uint32_t ith = 0; ith < n_others_b; ith++)
 		if (!(F & t_others_b[ith].u32[0]))
 			if(n3_others_b<256)t3_others_b[n3_others_b++] = t_others_b[ith];
+	/*
+	if (g17b.diagbug  == 2) {
+		cout << Char27out(F) << "three cells filter n3_others_b" << n3_others_b << endl;		cout << " n3_other table" << endl;
+		for (uint32_t i = 0; i < 2; i++)// n3_others_b; i++)
+			cout << Char2Xout(t3_others_b[i].u64) << endl;
+	}
+	*/
 	//___________ build vectors for others apply to b 6clues
 	vv_others.Init(n3_others_b);
 	memset(vv_cellsA, 255, sizeof vv_cellsA);// all bits to 1
@@ -673,12 +740,12 @@ void TU_SMALL::BuildInit3cluesA(uint32_t bfA) {// reduce tables
 		register uint32_t Rw = t3_others_b[i].u32[0];//band A
 		while (bitscanforward64(cc, Rw)) {// look for  possible cells
 			Rw ^= 1 << cc;// clear bit
-			vv_cellsA[cc].Clear(i, ir);
+			vv_cellsA[cc].Clear(bloc, ir);
 		}
 		Rw = t3_others_b[i].u32[1] & BIT_SET_2X;//band B
 		while (bitscanforward64(cc, Rw)) {// look for  possible cells
 			Rw ^= 1 << cc;// clear bit
-			vv_cellsB[cc].Clear(i, ir);
+			vv_cellsB[cc].Clear(bloc, ir);
 		}
 	}
 	//_______ prepare the 3 cells others vector
@@ -688,7 +755,7 @@ void TU_SMALL::BuildInit3cluesA(uint32_t bfA) {// reduce tables
 		int cca;// this is bandA
 		while (bitscanforward(cca, bf)) {
 			bf ^= 1 << cca; //clear bit
-			vv3.And(vv_cellsA[cc]);
+			vv3.And(vv_cellsA[cca]);
 		}
 	}
 	//________ apply  vv_cellsB to b 6clues
@@ -697,9 +764,9 @@ void TU_SMALL::BuildInit3cluesA(uint32_t bfA) {// reduce tables
 	for (uint32_t i3 = 0; i3 < ni3; i3++) {// use first 3 clues from index 3
 		int cc;
 		uint32_t bf3 = myB.myi3[i3].cellsbf;
-		uint32_t indd= myB.myi3[i3 + 1].ideb,
+		uint32_t indd= myB.myi3[i3].ideb,
 			indf = myB.myi3[i3 + 1].ideb;
-
+		//if(bands_ab.i3==43 )		cout <<Char27out(bf3)<< "applyb indd="<<indd<<"indf="<<indf << endl;
 		VECT256 v3 = vv_others;
 		register uint32_t bf3w = bf3;
 		while (bitscanforward(cc, bf3w)) {// setup v3
@@ -715,13 +782,25 @@ void TU_SMALL::BuildInit3cluesA(uint32_t bfA) {// reduce tables
 				v6.And(vv_cellsB[cc]);
 			}
 			bB_v256[i6]=v6;
+			/*
+			if (g17b.diagbug == 2 && i6 == 3405&& bands_ab.ia==1) {
+				cout << " status for expected Y" << endl;
+				char ws[129];
+				cout << vsm3.String128(ws) << " vsm3 still active " << endl;
+				cout << bB_v128[i6].String128(ws) << " vector for i6 " << endl;
+				cout << Char27out(myB.mybv6[i6]) << " brut i6=" << i6 << endl;
+				cout << Char27out(myB.mybv6[i6] & (~bf3)) << " net" << endl;
+				cout << Char32out(v3.v[0].bf.u32[0]) << " v3 debut" << endl;
+				cout << Char32out(v6.v[0].bf.u32[0]) << " v6 debut"				<< endl;
+			}
+			*/
 		}
 	}
 }
 void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
-	int locdiag = 0;
+	//int locdiag = 0;
 	//if (bands_ab.i5 == 40)locdiag = 1;
-	if (locdiag) cout << "BuildInit5cluesA diag" << endl;
+	//if (locdiag) cout << "BuildInit5cluesA diag" << endl;
 	bf5 = bf2A;
 	uint32_t bfplus = bf2A ^ bf3;
 	vsm5 = vsm3;
@@ -734,7 +813,7 @@ void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
 			vsm5 &= vcellskill[cca];
 		}
 	}// now vsm5 has still possible small 
-	if (locdiag) cout << "loca" << endl;
+	//if (locdiag) cout << "loca" << endl;
 	register uint32_t F = bf2A;
 	{// check if a small uab not killed still exists
 		BF128 vsm5w = vsm5;
@@ -753,7 +832,7 @@ void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
 		}
 	}// left with still valid small uab
 	//cout << Char64out(vsm5.bf.u64[0]) << "vsm5 3" << endl;
-	if (locdiag) cout << "locb" << endl;
+	//if (locdiag) cout << "locb" << endl;
 
 
 	memset(&smin, 0, sizeof smin);
@@ -783,7 +862,7 @@ void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
 			smin.mini_triplet |= 1 << imini;
 		}
 	}
-	if (locdiag) cout << "locc smin.mincount="<< smin.mincount << endl;
+	//if (locdiag) cout << "locc smin.mincount="<< smin.mincount << endl;
 	if (smin.mincount < 4) return; // will be vector mode
 	if (smin.mincount >6) return; // will be killed
 	// this is purely to see if a "critical" in + out is possible
@@ -819,8 +898,8 @@ void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
 			}
 		}
 	}
-	if (0) for (uint32_t itp = 0; itp < ntemp; itp++)
-		cout << Char27out(temp[itp]) << endl;
+	//if (0) for (uint32_t itp = 0; itp < ntemp; itp++)
+	//	cout << Char27out(temp[itp]) << endl;
 	{// split temp > 3 cells in subtables in field out field
 		uint32_t *ti = bands_ab.btuaif, *to = bands_ab.btuaof,
 			ni = 0, no = 0,ando= BIT_SET_27;
@@ -1207,20 +1286,26 @@ void BANDS_AB::EnterTempxy(uint32_t bf) {// from direct expansion
 	w.u32[1] = bf;
 }
 void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
-	if (g17b.debug17>1)cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
+	if (g17b.debug17>1)//|| g17b.diagbug == 2)
+		cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
+	//if(i3==13)cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
 	p_cpt2g[6]+= nxy_filt1;
 	for (uint32_t itemp = 0; itemp < nxy_filt1; itemp++) {
 		GINT64  w = tempXY[itemp];
-		//cout << Char2Xout(w.u64) << endl;
+		//if (g17b.diagbug == 2)cout << Char2Xout(w.u64) << "XY" << endl;
 		if (g17b.debug17_check) {
 			if (w.u32[0] != g17b.k17x(ia)) continue;
 			if (w.u32[1] != g17b.k17x(ib)) continue;
 			cout << Char27out(w.u32[1]) << "we have the right band B" << endl;
 		}
-
-		bfA = w.u32[0]; bfB = w.u32[1]; 
+		if (g17b.diagbug==2) {
+			if (w.u32[0] == g17b.k17x(ia)&& w.u32[1] == g17b.k17x(ib))
+				cout << Char27out(w.u32[1]) << "we have the right band B" << endl;
+		}
+		bfA = w.u32[0]; bfB = w.u32[1];
 		// check the "more" table if available
 		if (moreuas_AB.Check(w.u64)) continue;
+		if (moreuas_AB_big.Check(w.u64)) continue;
 		// rebuild table of clues and build stack count for A,B
 		nclues = 0;
 		uint32_t cell, wbf = bfA;
@@ -1243,25 +1328,31 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 		int ir3 = GetNextIb3();// return -1 if nothing, 0 if matrix
 		if (ir3<0) continue;// no band 3 to process
 		p_cpt2g[8]++;
+		if (g17b.diagbug == 2) {
+			if (w.u32[0] == g17b.k17x(ia) && w.u32[1] == g17b.k17x(ib))
+				cout << Char27out(w.u32[1]) << " right band B check valid" << endl;
+			//else continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		}
 		//_____ check for unique solution bands A;B
 		register uint64_t myua = zh2b[0].ValidXY(tclues, nclues, 0);
 		if (myua) {//___ if not do the best with the UA
-			/*
-			if (g17b.debug17 > 2) cout << Char2Xout(myua) << "uaret band b multiple" << endl;
+			//if (g17b.debug17 ) 		cout << Char2Xout(myua) << "uaret band b multiple" << endl;
 			register uint64_t uab = myua >> 32, uaa = myua & BIT_SET_27, uab12 = myua;
 			if (ia)uab12 = uab | (uaa << 32);
 			uint64_t cc64 = _popcnt64(uab12);
-
 			if (cc64 < 12) {// this should never be check for a bug
-				cout << Char2Xout(uab12) << "ua < 12 to add ??? g17b.npuz" << g17b.npuz
-					<< endl;
-				cerr << "ua < 12 to add ??? g17b.npuz" << g17b.npuz << endl;
-				zh2b[0].DebugValidXY(tclues, nclues, 0);
+				cout << Char2Xout(uab12) << " ua < 12 to add   clean"  << endl;
+				cerr << "ua < 12 to add clean" << endl;
+				cout << Char2Xout(w.u64) << " XY at call" << endl;
+				myua = zh2b[0].ValidXY(tclues, nclues, 1);
+				g17b.aigstop = 1;
 			}
-			moreuas_AB.Add(myua);
+			if(cc64<21)			moreuas_AB.Add(myua);
+			else moreuas_AB_big.Add(myua);
+			/*
 			// insert it in the right place in tusmall (next 3 clues)
 			tusmall.InsertMore(myua);
-			if (cc64 < 20)genuasb12.AddUACheck(uab12 | ((uint64_t)cc64 << 59));// and update the UA table
+			if (cc64 < 20)genuasb12.AddUACheck(uab12 | ((uint64_t)cc64 << 59));//  update the UA table
 			*/
 			continue;
 		}// end not a unique solution
@@ -1271,17 +1362,28 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 			if (i > 4)tcluesb12[i] -= 27; else tcluesb12[i] += 27;
 		if (zhou[0].PartialInitSearch17(tcluesb12, nclues))// A;B order ok to check
 			return;// would be  bug
-
 		p_cpt2g[9]++;
-		if (ir3 < 6) {// apply a matrix filter
-			p_cpt2g[10]++;
-			MatrixB3(genb12.bands3[cur_ib]);
-		}
-		else {// do a band3 expansion critical miss1 miss2
-			p_cpt2g[11]++;
-			GoBand3();
-			fout1 << g17b.npuz << endl;
-			g17b.a_17_found_here = 1;// pour éviter le blocage
+		// oh<<<<<<<< return sb3.smin.minplus;
+		while (1) {
+/*
+			if (g17b.diagbug == 2 && g17b.debugb3 == cur_ib) {
+				cout << "this is the expected band 3 in process ir3= "<<ir3 << endl;
+				smin.Status();
+			}
+*/
+
+			if (ir3 > 6) {// apply a matrix filter
+				p_cpt2g[10]++;
+				MatrixB3(genb12.bands3[cur_ib]);
+			}
+			else {// do a band3 expansion critical miss1 miss2
+				p_cpt2g[11]++;
+				GoBand3();
+				//fout1 << g17b.npuz << endl;
+				//g17b.a_17_found_here = 1;// pour éviter le blocage
+			}
+			cur_ib++;
+			if (GetNextIb3() < 0) break;
 		}
 	}
 	nxy_filt1 = 0;
@@ -1401,15 +1503,21 @@ void TU_GUAN::InitC_Guas() {// guas vector after 6 clues B
 }
 int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band 
 	int locdiag = 0;
+	/*
+	if (g17b.diagbug == 2 && g17b.debugb3 == cur_ib) {
+		cout << "this is the expected band 3 in GetNextIb3() "  << endl;
+		//locdiag=1;
+	}
+	*/
 	if(locdiag)cout << "entry GetNextIb3() cur_ib=" <<cur_ib<< endl;
-	if (locdiag)tuguan.DebugvB();
+	//if (locdiag)tuguan.DebugvB();
 	for (; cur_ib < genb12.nband3; cur_ib++) {// look for first band
 		STD_B3 & sb3 = genb12.bands3[cur_ib];
 		sb3.vag_AB = sb3.v_active_guas;
 		sb3.vag_AB.And(tuguan.vB);
 		sb3.SetUpMincountAB();// building smin not minplus 
 
-		sb3.smin.Status();
+		if (g17b.debug17||locdiag)sb3.smin.Status();
 		sb3.smin.minplus = sb3.smin.mincount;
 
 		if (sb3.smin.mincount > 6) continue;
@@ -1417,13 +1525,12 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 		stack_countf.u64 = stack_count.u64 +
 			sb3.smin.Count_per_stack().u64;
 
-		if (g17b.debug17)cout << stack_countf.u16[0] << stack_countf.u16[1] << stack_countf.u16[2]
+		if (g17b.debug17|| locdiag)cout << stack_countf.u16[0] << stack_countf.u16[1] << stack_countf.u16[2]
 			<< " stack count" << endl;
 
 		if (stack_countf.u16[0] > 6 || stack_countf.u16[1] > 6 ||
 			stack_countf.u16[2] > 6) continue;
-
-		if (sb3.smin.mincount < 4) return 0; // will be matrix expansion
+		if (sb3.smin.mincount < 4) return 7; // forcing matrix expansion
 		// build free staks pattern
 		uint32_t fstk= BIT_SET_27;
 		if (stack_countf.u16[0] == 6) fstk ^= 07007007;
@@ -1433,8 +1540,13 @@ int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band
 		// Build in field out field and check minplus
 		nuasb3_1 = nuasb3_2 = 0;
 		int b3bloc = cur_ib >> 7, b3ir = cur_ib & 127;
-		VECT256 vw = tuguan.vB; vw.Not(sb3.vag2); vw.Not(sb3.vag3);
-		if (locdiag)vw.Print("sockets not pair or triplet");
+		VECT256 vw = sb3.vag_AB; vw.Not(sb3.vag2); vw.Not(sb3.vag3);
+		if (locdiag) {
+			tuguan.vB.Print("all valid sockets for the band");
+			vw.Print("sockets not pair or triplet");
+			sb3.vag2.Print(" vag2")  ;
+			sb3.vag3.Print(" vag3");
+		}
 		if (locdiag)cout << Char27out(fstk) << " out free stacks" << endl;
 		int tu[256], ntu;
 		vw.Table(tu, ntu);// now guan to consider as uas
@@ -1589,41 +1701,19 @@ int BANDS_AB::IsMultiple_bb(int bf,int diag) {
 		wbf ^= 1 << cellb;
 		tclues[nclues++] = cellb + 27;
 	}
-	//p_cpt2g[7]++;
 	register uint64_t myua = zh2b[0].ValidXY(tclues,nclues, diag);
 	if (myua) {//store the fresh ua bands ab
-		/*
-
-		myuab = (uint32_t)uab;
-		int cc = _popcnt32((uint32_t)uab);
-		// add uab in field or in "more outfield
-		uint32_t ua = myuab | _popcnt32(myuab) << 27;
-		if (uab & sbb.mB.critbf) {
-			if (nmoreif < 128)AddUA32(more_if, nmoreif, ua);
+		register uint64_t uab = myua >> 32, uaa = myua & BIT_SET_27, uab12 = myua;
+		if (ia)uab12 = uab | (uaa << 32);
+		uint64_t cc64 = _popcnt64(uab12);
+		if (cc64 < 12) {// this should never be check for a bug
+			cout << Char2Xout(uab12) << " ua < 12 to add  mult bb"			<< endl;
+			cerr << " ua < 12 to add  mult bb" << endl;
+			g17b.aigstop = 1;
 		}
-		else if (nmoreof < 128)AddUA32(more_of, nmoreof, ua);
-
-		g17b.moreb.Add((uint32_t)uab);// see final or multiple
-
-		if (cc < 2)return 1;// should never be <2
-		if (cc >= 4) {// add it to the reduced table in ua ub mode
-			if (ntua < 512)		tua[ntua++] = myua;
-			return 1;
-		}
-		int i36;
-		for(int imini=0,bit=1,mask=7;imini<9;imini++,bit<<=1,mask<<=3){
-			if(!(uab&mask) )continue;
-			if (cc == 2) {// fresh mini2
-				uint32_t bit27 = (uab&mask) ^ mask;
-				bitscanforward(i36, bit27);
-			}
-			else i36 = imini+27;
-			if (!ntuasmini[i36])activemini[nactivemini++] = i36;
-			if (ntuasmini[i36] < 50)
-				tuasmini[i36][ntuasmini[i36]++] =(uint32_t) uaa;
-		}		*/
-
-	
+		if (cc64 < 21)			moreuas_AB.Add(myua);
+		else moreuas_AB_big.Add(myua);
+		//cout << Char27out(myua) << "added direct" << endl;
 	}
 	return (myua>0);
 }
@@ -1665,12 +1755,14 @@ void BANDS_AB::GoBand3() {
 				cout << Char27out(uasb3_2[i] ) << " i=" << i << endl;
 		}
 	}
-	p_cpt2g[11 + nmiss] ++;
+	p_cpt2g[12 + nmiss] ++;
 	memcpy(&genb12.grid0[54], genb12.bands3[cur_ib].band0, 4*27);
 	G17B3HANDLER hh0; hh0.Init();
-	cout << "status after init" << endl;
-	hh0.smin.Status();
-	hh0.diagh = 1;// sbb.diag;
+	hh0.diagh = 0;// sbb.diag;
+	if (hh0.diagh) {
+		cout << "status after init" << endl;
+		hh0.smin.Status();
+	}
 	if(!nmiss)hh0.Go_Critical();
 	else if (nmiss==1)	hh0.Go_miss1_b3();
 	else hh0.Go_miss2_b3();
@@ -2120,7 +2212,7 @@ void G17B3HANDLER::Go_Critical(uint32_t * wua){// critical situation all clues i
 		bands_ab.FinalCheckB3(known_b3);
 		return; // should be seen earlier if possible
 	}
-	cout<< Char27out(active_b3) <<" active after 2 pairs"<<endl;smin.Status();
+	//cout<< Char27out(active_b3) <<" active after 2 pairs"<<endl;smin.Status();
 	int ua = IsMultiple(known_b3 | active_b3);
 	if (ua) {
 		if (wua) *wua &= ua;
@@ -2128,9 +2220,9 @@ void G17B3HANDLER::Go_Critical(uint32_t * wua){// critical situation all clues i
 	}
 	if(BuildIfShortB3())return;
 	if (ShrinkUas1()) return;// dead branch
-	cout << Char27out(active_b3) << " active aftershrinkuas" << endl; smin.Status();
+	//cout << Char27out(active_b3) << " active aftershrinkuas" << endl; smin.Status();
 	if (!active_b3) {
-		cout << Char27out(known_b3) << " call final check" << endl;  
+		//cout << Char27out(known_b3) << " call final check" << endl;  
 		bands_ab.FinalCheckB3(known_b3);
 		return; // should be seen earlier if possible
 	}
@@ -2390,9 +2482,17 @@ const char * g17tl[40] = { "0__", "falluas", "fstack1", "UasGuas", "fb12v", "  b
 };
 
 //=============================== debugging sequences
+
 int G17B::DebugK17M10() {
+	cout << "b1 i416=" << myband1.i416 << " b2 i416=" << myband2.i416
+		<< " n5b1=" << myband1.nmybv5 << " n5b2=" << myband2.nmybv5 << endl;
 	GodebugInit(0);
 	if (GodebugCheckUas("check uas")) return 1;
+	if (GodebugFindKnown17()) {
+		cout << "failed to find the expected 17 in expanded bands" << endl;
+		return 1;
+	}
+	else cout << iband1 << " " << iband2 << " seen solution" << endl;
 	if (0) {
 		if (debug17 > 2) {
 			cout << "index band 1" << endl;
@@ -2401,7 +2501,6 @@ int G17B::DebugK17M10() {
 			myband2.DebugExp();
 
 		}
-
 	}
 	return 0;
 }
@@ -2413,6 +2512,7 @@ void G17B::GodebugInit(int mode) {// called from DebugK17M10
 	cout << "nguas socket3  \t" << genb12.ntua3<<endl;
 	cout << "guas number sockets  2;3;all\t"
 		<<tuguan.ng2<<"\t" << tuguan.ng3 << "\t" << tuguan.nguan << endl;
+	cout << "nsmall1=" << tusmall.nsmall1 << " nsmall2=" << tusmall.nsmall2 << endl;
 
 	if (mode & 1)tuguan.Debug1();// guas list and killers
 

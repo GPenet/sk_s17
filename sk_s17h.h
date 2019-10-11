@@ -12,10 +12,10 @@ struct XINDEX3 {
 		ideb = ind6;
 		ideb5 = ind5;
 	}
-	void status() {
+	void status( int i) {
 		cout << Char27out(cellsbf)
 			<< " d5=" << ideb5 << "\td6=" << ideb
-			<< endl;
+			<< " i=" << i<< endl;
 	}
 };
 struct X_EXPAND_3_5 {
@@ -130,6 +130,12 @@ struct XBANDA {
 	BF128 vsm5; // vector small uas
 	VECT256 vv5; // vector other uas
 	uint32_t bf5;
+	void Debug() {
+		cout <<Char27out(bf5)<< "xbanda debug" << endl;
+		char ws[129];
+		cout << vsm5.String128(ws) << " vsm5" << endl;
+		vv5.Print(" vv5");
+	}
 };
 
 struct G17TMORE{// FIFO table of more for bands 1+2
@@ -312,14 +318,14 @@ struct STD_B416 {
 		, int iband = 1);
 	void ExpandBand();
 	void DebugExp(){
-		cout << "band id " << i416;
+		cout << band<<" band id " << i416;
 		cout << "\tn5=" << nmybv5;
 		cout << "\tn6=" << nmybv6 << endl;
 	}
 	void DebugIndex() {
 		cout << "debug index bande" << endl;
 		for (int i = 0; i < nmyi3; i++)
-			myi3[i].status();
+			myi3[i].status(i);
 	}
 	void Debug5() {
 		int indf5 = myi3[nmyi3 - 1].ideb5;
@@ -400,8 +406,8 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 		tuamore[500];
 	//_______________uamore control
 	STD_B1_2 *ba, *bb;
-	int ib, digp;
-	uint64_t w0, ua;
+	uint32_t patb, ib, digp,colb, cola;
+	uint64_t w0, ua,p12;
 	//_____________________ functions collect UAs bands 1+2
 	int Initgen();
 	void BuildFloorsAndCollectOlds(int fl);
@@ -413,10 +419,11 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 		if (nua >= TUA64_12SIZE) nua = TUA64_12SIZE - 1;
 		ua = v; AddUA64(tua, nua, ua);
 	}
-	void BuilOldUAs(uint32_t r0);
+	int BuilOldUAs(uint32_t r0);
 	int CheckOld();
 	int CheckMain(uint64_t wua);
-	void CollectMore();
+	void CollectMore2digits();
+	void Collect2digits2_4_cols();
 	void CollectMoreTry6_7();
 	void EndCollectMoreStep();
 	void CollectTriplets();
@@ -449,7 +456,7 @@ struct GEN_BANDES_12 {// encapsulating global data
 	int gang[9][3]; // gangcols expanded (buildgang ) 3 digits
 	int gangb12[9]; // digit bf bands 12 per column
 	int   *gang27; // redefines gang[9][3] as 27 integer
-	int   gang_digits_cols[9][3];// actice cols for a given digit
+	int   gang_digits_cols[9][3];// active cols for a given digit
 	//____________structs hosting the 81 GUA entries
 	struct SGUA2 {// 81 possible UA2 sockets
 		// permanent data
@@ -619,7 +626,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		void GoExpandBDebugSetDiag();
 		void DebugIfOf();
 	}sbb;
-	G17TMORE moreuas_AB;
+	G17TMORE moreuas_AB,moreuas_AB_big;
 	MORE32 moreuas_b3, moreuas_b3_small;
 	uint32_t ni3, mode_ab, ia, ib,myuab,
 		indd,indf,ncluesbandb,stack_filter,
@@ -764,8 +771,8 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 	GUAN tguan[256], guanw;
 	uint32_t nguan;
 	uint32_t ng2, ng3;// debugging only
-	uint64_t  guabuf[10000], *pguabuf;
-	uint64_t  guabufr[5000], *pguabufr;
+	uint64_t  guabuf[15000], *pguabuf;
+	uint64_t  guabufr[10000], *pguabufr;
 	VECT256 vv, vvcells[54], vA, vB;
 	void AddGuan(uint64_t *t, uint32_t n, uint32_t cbf,
 		int32_t dbf, uint32_t ind) {
@@ -799,8 +806,9 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
   
 struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	BF128 p17diag;// known 17 pattern for tests
-	int b3lim, debug17,debug17_check, diag, diagbug, aigstop,
-		npuz, a_17_found_here;
+	int b3lim, debug17,debug17_check,
+		diag, diagbug,debugb3, aigstop,
+		npuz, a_17_found_here,nb3;
 	uint32_t	iband1,iband2;
 	G17B3HANDLER g17hh0;
 
@@ -817,7 +825,17 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 			
 	//================ debugging code
 	inline uint32_t k17x(int ix) {	return p17diag.bf.u32[ix];	}
+	void DebugGetPuz(const char * p) {
+		p17diag.SetAll_0();
+		for (int i = 0; i < 81; i++)
+			if (p[i] != '.')p17diag.Set_c(i);
 
+		cout <<"this is a "
+			<<_popcnt32(p17diag.bf.u32[0])
+			<< _popcnt32(p17diag.bf.u32[1])
+			<< _popcnt32(p17diag.bf.u32[2]) 
+			<<" pattern for the expected puzzle"<< endl;
+	}
 	int DebugK17M10();
 	void GodebugInit(int mode);
 	int GodebugFindKnown17();

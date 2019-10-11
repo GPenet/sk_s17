@@ -15,12 +15,12 @@ const char * libs_c17_00_cpt2g[40] = {
 	"8 calls brute force",//8
 	"9 valid brute force",//9
 	"10 b3 matrix",//10
-	"11 b3 nmiss0",//11
-	"12 b3 nmiss1",//12
-	"13 b3 nmiss2",//13
-	"14 ",//14
+	"11 b3 nmissx",//11
+	"12 b3 nmiss0",//12
+	"13 b3 nmiss1",//13
+	"14 b3 nmiss2",//14
 	"15 ",//15
-	"16 ",//16
+	"16 entry critical",//16
 	"17 ",//17
 	"18 n uas at start",//18
 	"19 n gua2s at start  ",//19
@@ -120,7 +120,7 @@ void Go_c17_10( ) {
 		if (npuz <= (int)sgo.vx[2]) continue;
 		if (npuz > (int)sgo.vx[3]) break;
 		g17b.debug17 = sgo.vx[0];
-		g17b.debug17_check = 1;
+		g17b.debug17_check = 0;
 		//if (npuz >5) return;
 		cout << "\n\nto process  n="<<dec << npuz <<" debug="<< g17b.debug17 << endl;
 		long tdeb = GetTimeMillis();

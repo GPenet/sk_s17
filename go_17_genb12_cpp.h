@@ -454,12 +454,12 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 		}
 		if (nua2) {
 			// clean uas not containing killer (subsets of the minirow)
-			int n = 0;
-			for (uint32_t i = 0; i < nua2; i++)
-				if ((ptua2[i] & w.killer) == w.killer)
-					ptua2[n++] = ptua2[i];
-			if (!n)continue;
-			nua2 = n;
+			//int n = 0;
+			//for (uint32_t i = 0; i < nua2; i++)
+			//	if ((ptua2[i] & w.killer) == w.killer)
+			//		ptua2[n++] = ptua2[i];
+			//if (!n)continue;
+			//nua2 = n;
 			tactive3[nactive3++] = i81;
 			ntua3 += nua2;
 			w.nua = nua2;
