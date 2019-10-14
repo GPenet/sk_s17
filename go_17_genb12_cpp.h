@@ -53,7 +53,6 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		w.tua= tuguan.pguabuf;
 		ptua2 = w.tua;
 		nua2 = 0;
-
 		//================== GUA collector 2 bands 
 		GuaCollect(w.digs );
 		for (int i = 0; i < 84; i++) {// find UAs 3 digits
@@ -319,7 +318,6 @@ void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
 	if (diag) cout << "zh2b5_g.CollectUas5();" << endl;
 	if (!zh2b5_g.nuaf5) return;
 	Build_tuacheck( fl);
-
 	// check subsets and add to main table
 	for (uint32_t i = 0; i < zh2b5_g.nuaf5; i++) {
 		ua = zh2b5_g.tuaf5[i].bf.u64;
@@ -402,11 +400,6 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 				w.valid = 1;
 		}
 		if (!w.valid)continue;
-		// build killer to clear subsets
-		w.killer = zh2b_g.fd_sols[0][w.dig1].bf.u64;
-		w.killer |= zh2b_g.fd_sols[0][w.dig2].bf.u64;
-		w.killer |= zh2b_g.fd_sols[0][w.dig3].bf.u64;
-		w.killer &= band3xBM[(w.col1 / 3) + 3].u64[0];
 		// Setup the perms for gangsters in minirow
 		int bita = 1 << w.dig1, bitb = 1 << w.dig2, bitc = 1 << w.dig3,
 			digs=bita|bitb|bitc;
@@ -422,8 +415,6 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 		ptua2 = w.tua;
 		nua2 = 0;
 
-		// build revised gangster
-		//w.gangcols[w.col2] ^= w.digs;
 		int tp3f[2][3] = { {1,2,0},{2,0,1} };// perms no valid digit
 		for (int ip = 0; ip < 2; ip++) {
 			// build revised gangster
@@ -453,13 +444,6 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 			}
 		}
 		if (nua2) {
-			// clean uas not containing killer (subsets of the minirow)
-			//int n = 0;
-			//for (uint32_t i = 0; i < nua2; i++)
-			//	if ((ptua2[i] & w.killer) == w.killer)
-			//		ptua2[n++] = ptua2[i];
-			//if (!n)continue;
-			//nua2 = n;
 			tactive3[nactive3++] = i81;
 			ntua3 += nua2;
 			w.nua = nua2;

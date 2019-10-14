@@ -577,7 +577,7 @@ void ZH2B5_GLOBAL::CollectUas5() {
 	zh2b5[0].cells_unsolved = cells_unsolved;
 	uint32_t t[5] = { 077,07777,0777777,077777777,07777777777 };
 	zh2b5[0].rows_unsolved.bf.u32[0] = t[ndigits-1];
-	if(diag)zh2b5[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<
+	if(diag)zh2b5[0].ImageCandidats();
 	//if (1) return;
 	zh2b5[0].ComputeNext5();
 }
@@ -614,8 +614,8 @@ void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
 	//int ir = genuasb12.AddUA64(&tuaf5[0].bf.u64, nuaf5);
 	//uint64_t cc = _popcnt64(genuasb12.ua);
 	//genuasb12.ua.bf.u64  |= cc << 59;
-	if (zh2b5_g.diag)cout << Char2Xout(ua) << " ua found nuaf5=" << nuaf5 << "cc=" << cc << endl;
 	AddUA64(&tuaf5[0].bf.u64, nuaf5,ua);
+	if (zh2b5_g.diag)cout << Char2Xout(ua) << " ua found end nuaf5=" << nuaf5 << "cc=" << cc << endl;
 }
 
 //======================== ZH2B5  2-5 digits
@@ -1313,7 +1313,7 @@ int ZHONE::FullUpdate() {
 	return 1;
 }
 
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//___________________________________________________
 char * ZHONE::SetKnown(char * zs) {
 	strcpy(zs, &empty_puzzle[27]);
 	zs[27] = 0;

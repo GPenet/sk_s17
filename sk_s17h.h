@@ -279,17 +279,25 @@ struct GUAN {// one occurrence of the active guan
 		for (uint32_t i = 0; i < nua; i++)killer &= tua[i];
 		ncol = _popcnt32(colbf);
 	}
-	void Debug1Guan(int i) {
+	void Debug1Guan(int i,int all=0) {
 		cout << Char2Xout(killer);
 		cout << " i=" << i << "\tcols" << Char9out(colbf);
 		cout << "\tdigs" << Char9out(digsbf) << " ncol=" << ncol
 			<< " nua=" << nua << " i81=" << i81
 			<< endl;
-		if (0) {
+		if (all) {
 			cout << Char2Xout(killer) << " kill " << endl;
 			for (uint32_t i = 0; i < nua; i++)
 				cout << Char2Xout(tua[i]) << endl;
 		}
+	}
+	void Debug2Guan(int i) {
+		cout << "reduced table i=" << i << "\tcols" << Char9out(colbf);
+		cout << "\tdigs" << Char9out(digsbf) << " ncol=" << ncol
+			<< " nuar=" << nuar << " i81=" << i81
+			<< endl;
+		for (uint32_t i = 0; i < nuar; i++)
+			cout << Char2Xout(tuar[i]) << endl;
 	}
 };
 
@@ -438,7 +446,7 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 #define GUAREDSIZE 100
 struct GEN_BANDES_12 {// encapsulating global data 
 	STD_B3 bands3[512];
-	int modeb12, go_back, diagmore,
+	int modeb12, go_back, diagmore,diagbug,
 		it16, it16_2, imin16_1, imin16_2, imin16_3;
 	int i1t16, i2t16, i3t16, maxnb3; // index 416 ordered in increasing size of valid clues 6
 	char zsol[82], rband2[28];
