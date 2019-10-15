@@ -683,6 +683,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	void CriticalFinalCheck_bbx(int bf);
 	void GoBand3();
 	int BuildUasB3_in(uint32_t known, uint32_t field);
+	void Debug_If_Of_b3();
 };
 struct TU_LOCK {// current pointer to buffer for bands expansion
 	XINDEX3 * px_index;// pointer to next index 3 (b1,b2,dummy b3)

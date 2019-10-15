@@ -8,7 +8,7 @@ const char * libs_c17_00_cpt2g[40] = {
 	"1 total bands 3",//1
 	"2 index 3 entries",//2
 	"3 index 3_5 entries",//3
-	"4 countplus 6 ",//4
+	"4 countplus=6 ",//4
 	"5 A/X matrix   ",//5
 	"6 clean entries   ",//6
 	"7 XY raw count/100",//7
@@ -19,7 +19,7 @@ const char * libs_c17_00_cpt2g[40] = {
 	"12 b3 nmiss0",//12
 	"13 b3 nmiss1",//13
 	"14 b3 nmiss2",//14
-	"15 ",//15
+	"15 countplus4-5",//15
 	"16 entry critical",//16
 	"17 ",//17
 	"18 n uas at start",//18

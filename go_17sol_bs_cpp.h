@@ -13,23 +13,24 @@
 //___ start process expand bands collect uas guas ...
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
 	if (aigstop)return;
-	const char * diagband = "349628571586371492712945863"; // la bonne
+	const char * diagband = "281364975374591862569872341"; // la bonne
 	//const char * diagband =   "349628517586371492712945863"; // le bug
-	const char * diagband3 = "265713948834592617971864325";
-	const char * diagpuz = ".2..5....4....9.3.......1..3.9..8.......7...2..............39..........7.7...4..5";
+	const char * diagband3 = "712648593845913627936725418";
+	const char * diagpuz = ".2..........1...36..8..7......3.......4...86......2.......485...........93.....1.";
 	diag = diagbug = 0;
 	//if (!strcmp(diagband, myband2.band)) {
-	if (genb12.nb12 != 2694151) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//if (genb12.nb12 != 2694160) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//cout << myband2.band << "band2 id=" << myband2.i416<<" nb12="<< genb12.nb12 << endl;
 	if (0){//(!strcmp(diagband, myband2.band)) {
-		//if (strcmp(diagband, myband2.band)) return;
-		cout << myband2.band << "go band2 id=" << myband2.i416 << endl;
+		if (strcmp(diagband, myband2.band)) return;
+		cout << myband2.band << "go band2 id=" << myband2.i416 << " nb12="<< genb12.nb12 << endl;
 		DebugGetPuz(diagpuz);
 		diagbug = 2;
 	}
 	else {
 		//if (1) return;
 		if (genb12.nb12 == sgo.vx[6]) diagbug = 1;
-		cout << myband2.band << "go band2 id=" << myband2.i416 << endl;
+		//cout << myband2.band << "go band2 id=" << myband2.i416 << endl;
 	}
 	p_cpt2g[0] ++;
 	p_cpt2g[1] +=genb12.nband3;
@@ -41,22 +42,22 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	myband2.ExpandBand();// expand band2
 	if (!(myband1.nmybv5 | myband2.nmybv5)) return; // no 656 no 566
 	tulock.LockExpand(myband2.nmyi3, myband2.nmybv5, myband2.nmybv6);
-	if (0 &&diagbug == 2) {
+	if (diagbug == 2) {
 		GodebugFindKnown17();
-		myband1.DebugIndex();
+		//myband1.DebugIndex();
 	}
 
 	//================= expand 6 for bands 3
 
 	nb3 = genb12.nband3;
+	debugb3 = -1;
 	for (int ib3 = 0; ib3 < nb3; ib3++) {// lock only 6 clues 
-		debugb3 = -1;
 		genb12.bands3[ib3].ExpandBand();// expand band3
 		tulock.LockExpand(genb12.bands3[ib3].nmyi3, 0, genb12.bands3[ib3].nmybv6);
 		if (diagbug) {
-			genb12.bands3[ib3].DebugExp();
 			if (strcmp(diagband3, genb12.bands3[ib3].band) == 0) {
-				cout << "this is the expected band" << endl;
+				genb12.bands3[ib3].DebugExp();
+				cout << "this is the expected band 3 ib3="<<ib3 << " out of nb3="<<nb3 << endl;
 				debugb3 = ib3;
 			}
 		}
@@ -74,13 +75,13 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	p_cpt2g[18] += genuasb12.nua;
 	p_cpt2g[19] += genb12.ntua2;
 	p_cpt2g[20] += genb12.ntua3;
-	if (1) 		GodebugInit(0);
+	if (diagbug) 		GodebugInit(0);
 	Go();// standard entry point for all 
 }
 void G17B::GoM10Uas() {
 	//=========================== collect UAs  old process 
 	zh1b_g.modegua = 0;//must be to activate filter in UAs b12 more
-	cout << " call init gen test sockest 2 4 bands 12" << endl;
+	//cout << " call init gen test sockest 2 4 bands 12" << endl;
 	if (genuasb12.Initgen()) return;
 
 	// extract small uas 
@@ -383,12 +384,12 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 			cout << Char27out(bf3) << "right i3=" << i3<<" ia="<<ia<< endl;
 		}
 		*/
-		/*
-		if (g17b.diagbug>=2) {//skip if not ok
-			if( !(wi3.cellsbf & (~g17b.p17diag.bf.u32[ia])) )
-			cout << Char27out(bf3) << "right i3=" << i3 << " ia=" << ia << endl;
-			//else continue;//<<< 
+		if (g17b.diagbug >= 2) {//<<<<<<<<<<<<<<<<<<<<<<<skip if not ok
+			if (!(wi3.cellsbf & (~g17b.p17diag.bf.u32[ia])))
+				cout << Char27out(bf3) << "right i3=" << i3 << " ia=" << ia << endl;
+			else continue;//<<< 
 		}
+		/*
 		*/
 
 		tusmall.BuildInit3cluesA(bf3);
@@ -421,13 +422,13 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 				cout << Char27out(bf5) << "right bandA i5=" << i5 << endl;
 			}
 			*/
-			/*
 			if (g17b.diagbug >= 2) {//skip if not ok
-				if(! (bf5 & (~g17b.p17diag.bf.u32[ia])))
-				cout << Char27out(bf5) << "right bandA i5=" << i5 << endl;
+				if (!(bf5 & (~g17b.p17diag.bf.u32[ia])))
+					cout << Char27out(bf5) << "right bandA i5=" << i5 << endl;
 				//else continue;//<<< 
 			}
 			//if(i3==43 && ia==0)cout << Char27out(bf5) << " i5=" << i5 << endl;
+			/*
 			*/
 			ncluesa = 0;
 			BitsInTable32((int *)tclues, ncluesa, bf5);
@@ -467,7 +468,8 @@ void BANDS_AB::Go(STD_B1_2 & ba, STD_B1_2 & bb, int i, int mode) {
 				//g17b.a_17_found_here = 1;
 				//return;
 			}
-			else {// build a band A 5 clues to run with all 6 band B
+			else 	{// build a band A 5 clues to run with all 6 band B
+				if(tusmall.smin.minplus>=4)p_cpt2g[15]++;
 				p_cpt2g[5]++;
 				XBANDA & myxba = xbanda[nxbanda++];
 				myxba.bf5 = bf5;
@@ -878,6 +880,7 @@ void TU_SMALL::BuildInit5cluesA(uint32_t bf2A) {
 			smin.mini_triplet |= 1 << imini;
 		}
 	}
+	smin.SetMincount();
 	//if (locdiag) cout << "locc smin.mincount="<< smin.mincount << endl;
 	if (smin.mincount < 4) return; // will be vector mode
 	if (smin.mincount >6) return; // will be killed
@@ -1304,19 +1307,19 @@ void BANDS_AB::EnterTempxy(uint32_t bf) {// from direct expansion
 void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 	if (g17b.debug17>1)//|| g17b.diagbug == 2)
 		cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
-	//if(i3==13)cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
+	//if(i3==57 && ia)cout << "entry CleanTempXY() ntempx=" << nxy_filt1 << endl;
 	p_cpt2g[6]+= nxy_filt1;
 	for (uint32_t itemp = 0; itemp < nxy_filt1; itemp++) {
 		GINT64  w = tempXY[itemp];
-		/*
 		//if (g17b.diagbug == 2)cout << Char2Xout(w.u64) << "XY" << endl;
-		if (g17b.debug17_check) {
+		if (g17b.diagbug == 2) {
 			if (w.u32[0] != g17b.k17x(ia)) continue;
 			if (w.u32[1] != g17b.k17x(ib)) continue;
-			cout << Char27out(w.u32[1]) << "we have the right band B" << endl;
+			cout << Char2Xout(w.u64) << "XY we have the right band B" << endl;
 		}
-		if (g17b.diagbug==2) {
-			if (w.u32[0] == g17b.k17x(ia)&& w.u32[1] == g17b.k17x(ib))
+		/*
+		if (g17b.diagbug == 2) {
+			if (w.u32[0] == g17b.k17x(ia) && w.u32[1] == g17b.k17x(ib))
 				cout << Char27out(w.u32[1]) << "we have the right band B" << endl;
 		}
 		*/
@@ -1348,12 +1351,12 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 		int ir3 = GetNextIb3();// return -1 if nothing, 0 if matrix
 		if (ir3<0) continue;// no band 3 to process
 		p_cpt2g[8]++;
-		/*
 		if (g17b.diagbug == 2) {
 			if (w.u32[0] == g17b.k17x(ia) && w.u32[1] == g17b.k17x(ib))
-				cout << Char27out(w.u32[1]) << " right band B check valid" << endl;
+				cout << Char27out(w.u32[1]) << " right band B try check valid" << endl;
 			//else continue;//<< 
 		}
+		/*
 		*/
 		//_____ check for unique solution bands A;B
 		register uint64_t myua = zh2b[0].ValidXY(tclues, nclues, 0);
@@ -1378,7 +1381,7 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 			*/
 			continue;
 		}// end not a unique solution
-		// init full check A B reordered if needed
+		if (g17b.diagbug == 2) cout  << " right band B  valid working now on band 3" << endl;
 		memcpy(tcluesb12, tclues, 11 * 4);
 		if (ia) for (int i = 0; i < 11; i++)
 			if (i > 4)tcluesb12[i] -= 27; else tcluesb12[i] += 27;
@@ -1395,7 +1398,7 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 
 		}
 		*/
-		if (1) {// to extract not in old process
+		if (0) {// to extract not in old process
 			if(!ia)		fout1 << genb12.nb12 << ";" << ia << ";" << w.u64 << endl;
 			else {
 				GINT64  ww; ww.u32[0] = w.u32[1]; ww.u32[1] = w.u32[0];
@@ -1403,16 +1406,28 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 			}
 		}
 		p_cpt2g[9]++;
+		if (1) continue; //<<<<<<<<< testing phase 1
 
 		while (1) {
-/*
-			if (g17b.diagbug == 2 && g17b.debugb3 == cur_ib) {
-				cout << "this is the expected band 3 in process ir3= "<<ir3 << endl;
-				smin.Status();
+			if (g17b.diagbug == 2) {
+				cout << genb12.bands3[cur_ib].band<<" cur_ib="<< cur_ib << " g17b.debugb3="<< g17b.debugb3 
+					<< " ir3=" << ir3<< endl;
+				if (g17b.debugb3 == cur_ib) {
+					STD_B3 & sb3 = genb12.bands3[cur_ib];
+					cout << "this is the expected band 3 in process cur_ib= " << cur_ib 
+						<<" countplus="<< sb3.smin.minplus << endl;
+					sb3.smin.Status();
+					//if (sb3.smin.minplus == 6) 
+						Debug_If_Of_b3();
+					//memcpy(&genb12.grid0[54], sb3.band0, 4 * 27);
+					//int bf = sb3.smin.critbf;
+					//int ir = zhou[1].CallMultipleB3(zhou[0], bf, 1);
+				}
 			}
+			/*
 */
 			//____________________ call the relevant band 3 process
-			if (ir3 > 6) {// apply a matrix filter
+			if (ir3 != 6) {// apply a matrix filter
 				p_cpt2g[10]++;
 				MatrixB3(genb12.bands3[cur_ib]);
 			}
@@ -1423,7 +1438,8 @@ void BANDS_AB::CleanTempXY() {//GINT64 tempXY[15000];
 				//g17b.a_17_found_here = 1;// pour éviter le blocage
 			}
 			cur_ib++;
-			if (GetNextIb3() < 0) break;
+			ir3 = GetNextIb3();
+			if (ir3 < 0) break;
 		}
 	}
 	nxy_filt1 = 0;
@@ -1545,11 +1561,11 @@ void TU_GUAN::InitC_Guas() {// guas vector after 6 clues B
 }
 int BANDS_AB::GetNextIb3() {//check tuguan.vB => mincount per band 
 	int locdiag = 0;
-	/*40535300115578881
 	if (g17b.diagbug == 2 && g17b.debugb3 == cur_ib) {
-		cout << "this is the expected band 3 in GetNextIb3() "  << endl;
-		//locdiag=1;
+		cout << "this is the expected band 3 in GetNextIb3() " << endl;
+		locdiag=1;
 	}
+	/*40535300115578881
 	*/
 	//if(locdiag)cout << "entry GetNextIb3() cur_ib=" <<cur_ib<< endl;
 	if (locdiag)tuguan.DebugvB();
@@ -2096,6 +2112,7 @@ void ZHOU::Compute17Next(int index, int diag) {
 				if (FD[d][0].Off_c(i))	wua.Set_c(i);
 			}
 			if (wua.isNotEmpty()) {// ignore true solution
+				if (diag) ImageCandidats();
 				zh_g.nsol++;
 				zh_g.go_back = 1;// closed anyway
 			}
@@ -2643,6 +2660,15 @@ int G17B::GodebugCheckUas(const char * lib) {
 	}
 	return 0;
 }
+void BANDS_AB::Debug_If_Of_b3() {
+	cout << "nif=" << nuasb3_1 << endl;
+	for (uint32_t i = 0; i < nuasb3_1; i++)
+		cout << Char27out(uasb3_1[i] )<< endl;
+	cout << "nof=" << nuasb3_2 << endl;
+	for (uint32_t i = 0; i < nuasb3_2; i++)
+		cout << Char27out(uasb3_2[i]) << endl;
+}
+
 
 
 void G17TB3GO::Debug() {
