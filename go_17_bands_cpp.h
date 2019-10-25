@@ -37,17 +37,18 @@ void STD_B416::InitC10(int i) {
 }
 void STD_B416::InitG12(int i) {
 	GetBandTable(i); SetGangster(); GetUAs();
+	MorphUas(); // to add the count
 }
 void STD_B416::MorphUas() {
 	// morph all uas
 	for (uint32_t i = 0; i < nua; i++) {
-		register int uao = tua[i], ua = 0;
+		register int uao = tua[i]&BIT_SET_27, ua = 0;
 		register uint32_t cc;
 		while (bitscanforward(cc, uao)) {
 			uao ^= 1 << cc;
 			ua |= 1 << map[cc];
 		}
-		tua[i] = ua;
+		tua[i] = ua | _popcnt32(ua) << 27;// store with count
 	}
 }
 
@@ -170,7 +171,7 @@ void STD_B416::ExpandBand( ) {// find all 5 and 6 clues solutions
 	s3->all_previous_cells = 0;
 	s3->active_cells = BIT_SET_27;// all cells active
 	s3->iuab3 = 0; // copy the start table
-	s3->possible_cells = tua[0];
+	s3->possible_cells = tua[0]& BIT_SET_27;
 	int tcells[10];
 	//____________________  here start the search
 next:

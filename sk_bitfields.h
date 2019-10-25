@@ -456,6 +456,13 @@ public:
 	char * String3X_Rev(char * ws);
 	char * String128(char * ws);
 	void PrintCells();
+	void Print(const char * lib) {
+		cout << "BF128 status for " << lib << endl;
+		uint64_t *w = bf.u64, id = 0;
+		for (int i = 0; i < 2; i++, id += 64, w++)
+			if (*w)cout << Char64out(*w) << " " << id << endl;
+
+	}
 };
 
 class PM3X {

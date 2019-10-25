@@ -44,7 +44,6 @@ ofstream  fout1, fout2;
 #include "go_17sol_tables.h"
 TU_LOCK tulock;
 TU_GUAN tuguan;
-TU_SMALL tusmall;
 G17B g17b;
 BANDS_AB bands_ab;
 GENUAS_B12 genuasb12;
@@ -65,7 +64,6 @@ VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B
 
 VECT256 b3_v256_buf[200 * MAXN6];// guas vectors 6 clues bands 3
 
-XBANDA xbanda[10000]; // band A to cross with band B 6 3 common clues
 GINT64 tempXY[30000];// limit chunkx * chunky here 100*200=20000
 TEMPGUAN4 tempguan4[256];
 

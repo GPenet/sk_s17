@@ -6,21 +6,21 @@ const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 const char * libs_c17_00_cpt2g[40] = {
 	"0 bands1+2 processed entries M10",//0
 	"1 total bands 3",//1
-	"2 index 3 entries",//2
-	"3 index 3_5 entries",//3
-	"4 countplus=6 ",//4
-	"5 A/X matrix   ",//5
-	"6 clean entries   ",//6
-	"7 XY raw count/100",//7
-	"8 calls brute force",//8
-	"9 valid brute force",//9
+	"2 3X3Y entries",//2
+	"3 somme  nx*ny",//3
+	"4 XY raw count/100 ",//4
+	"5 clean entries    ",//5
+	"6 calls brute force ",//6
+	"7 valid brute force",//7
+	"8 ",//8
+	"9 ",//9
 	"10 b3 matrix",//10
 	"11 b3 nmissx",//11
 	"12 b3 nmiss0",//12
 	"13 b3 nmiss1",//13
 	"14 b3 nmiss2",//14
-	"15 countplus4-5",//15
-	"16 entry critical",//16
+	"15 b3 nmiss3",//15
+	"16 b2 minplus 5",//16
 	"17 ",//17
 	"18 n uas at start",//18
 	"19 n gua2s at start  ",//19
@@ -29,10 +29,15 @@ const char * libs_c17_00_cpt2g[40] = {
 	"22 n sockets1",//22
 	"23 max bands 3",//23
 	"24 max bands 3 go",//24
-	"25 number of 17 found std",
-	"26 number of 17 found through expandb3",
-	"27",	"28", "29",
-	"30",	"31",	"32",	"33", "34",
+	"25  <=128",
+	"26  <=256",
+	"27  <=384",	
+	"28 <=512", "error nua >51229 ",
+	"30 ",	
+	"31 ajouts uas",
+	"32 somme uas extraits",
+	"33 somme detail initc guas",
+	"34",
 	"35",	"36",	"37",	"38", "39",
 
 };
@@ -165,14 +170,15 @@ void Go_c17_10( ) {
 		genb12.ValidInitGang();
 		g17b.npuz = npuz;
 		g17b.GoM10();
+		g17b.a_17_found_here = 1;
 		if (!g17b.a_17_found_here) {
 			cout << "puz="<<npuz << " failed to find the searched 17" << endl;
 			cerr << "puz=" << npuz << " failed to find the searched 17" << endl;
-			return;
+			break;
 		}
 	}
 	cout << "print final stats" << endl;
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 40; i++) {
 		if (!p_cpt2g[i])continue;
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
