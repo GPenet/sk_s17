@@ -12,6 +12,7 @@
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
 #define TUA64_12SIZE 3000
+#define NGUARBLOCS 20
 //============================================== 
 
 #define G17MORESIZE 32
@@ -57,7 +58,7 @@ STD_B1_2 myband1, myband2;
 
 XINDEX3 xep_bufindex3[200*300];//band1 band2 and band3
 uint32_t xep_buffer5[2*MAXN5];// only bands 1 and 2
-uint32_t xep_buffer6[200 * MAXN6];// bands 1 and 2 + all bands3
+uint32_t xep_buffer6[2* MAXN6];// bands 1 and 2  
 
 BF128 bB_v128[MAXN6];// Uas vector first 128 uas band B
 VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B

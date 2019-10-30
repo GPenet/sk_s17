@@ -27,33 +27,6 @@ struct X_EXPAND_3_5 {
 	d = (i1 << 16) | (i2 << 8) | 2;
 	}
 };
-/* defining a valid band solution
- bf.u64[1] 64 bits vector used as filter
- bf.u32[0] 27 bits field of the pattern
- bf.u32[1] bit count
-*/
-struct XEP :BF128 {// obsolete see tables 5 6
-	inline void Init(uint32_t f1) {
-		bf.u32[0] = f1;
-		bf.u32[1] = _popcnt32(f1);
-	}
-	inline uint32_t N() { return bf.u32[1]; }
-	inline uint32_t Pat() { return bf.u32[0]; }
-	inline uint64_t Vect() { return bf.u64[1]; }
-	void Initv(uint32_t *tu, uint32_t nu) {
-		memset(&bf.u64[1], 255, sizeof bf.u64[1]);
-		for (uint64_t i = 0, bit = 1; i < 36; i++, bit <<= 1)
-			if (bf.u32[0] & mini_pairs_tripletsbf[i])
-				bf.u64[1] ^= bit;// clear pair triplet hit
-		for (uint64_t i = 0, bit = ((uint64_t)1 << 36); i < nu; i++, bit <<= 1)
-			if (bf.u32[0] & tu[i])
-				bf.u64[1] ^= bit;// clear other hit
-	}
-	void DebugInitv() {
-		cout << Char27out(bf.u32[0]) << " xep bit field" << endl;
-		cout << Char64out(bf.u64[1]) << endl;
-	}
-};
 
 struct VECT256 {// vector for other uas after 3 clues
 	BF128 v[2];
@@ -88,106 +61,39 @@ struct VECT256 {// vector for other uas after 3 clues
 			if (*w)cout << Char64out(*w) << " " << id << endl;
 	}
 };
-struct VECT384 {// vector  uas after 3 clues
-	BF128 v[3];
-	inline int IsEmpty(VECT384 &v2) {
-		if ((v[0] & v2.v[0]).isEmpty() &&
-			(v[1] & v2.v[1]).isEmpty() &&
-			(v[1] & v2.v[1]).isEmpty()) return 1;
-		BF128 w = v[0] & v2.v[0];
-		return 0;
-	}
+
+struct VECTGUAR {// vector for other uas after 3 clues
+	BF128 v[NGUARBLOCS];// limit set to 2560 for guars
+	inline void Set1(){ memset(v, 255, sizeof(v)); }
 	inline void Init(int n) {
-		memset(v, 0, sizeof v);
-		if (n < 128)	v[0] = maskLSB[n];
-		else {
-			v[0].SetAll_1();
-			if (n < 256)	v[1] = maskLSB[n - 128];
-			else {
-				v[1].SetAll_1();
-				v[2] = maskLSB[n - 256];
+		memset(v, 0, sizeof(v));
+		if (n > NGUARBLOCS*128) return ;
+		for (int i = 0; i < NGUARBLOCS; i++) {
+			if (n > 128) {
+				v[i].SetAll_1();
+				n -= 128;
+				continue;
 			}
+			v[i] = maskLSB[n];
+			return;
 		}
+	}
+	inline void And(VECTGUAR & o ) {
+		for (int i = 0; i < NGUARBLOCS; i++)
+			v[i] &= o.v[i];
 	}
 	inline void Set(int i, int j) { v[i].Set(j); }
 	inline void Setx(int x) { Set((x >> 7), (x & 127)); }
 	inline void Clear(int i, int j) { v[i].clearBit(j); }
 	inline void Clearx(int x) { Clear((x >> 7), (x & 127)); }
-	inline void And(VECT384 &v2) {
-		v[0] &= v2.v[0]; v[1] &= v2.v[1]; v[2] &= v2.v[2];
-	}
-	inline int On(int i, int j) { return  v[i].On(j); }
-	inline void Table(int * t, int & n) {
-		n = v[0].Table128(t);
-		if (v[1].isNotEmpty()) {
-			int tu2[128], ntu2 = v[1].Table128(tu2);
-			for (int i = 0; i < ntu2; i++)
-				t[n++] = tu2[i] + 128;
-		}
-		if (v[2].isNotEmpty()) {
-			int tu2[128], ntu2 = v[2].Table128(tu2);
-			for (int i = 0; i < ntu2; i++)
-				t[n++] = tu2[i] + 256;
-		}
-	}
-	inline void Not(VECT384 &v2) {
-		v[0] -= v2.v[0]; v[1] -= v2.v[1]; v[2] -= v2.v[2];
-	}
 	void Print(const char * lib) {
-		cout << "V256 status for " << lib << endl;
+		cout << "VECTGUAR  status for " << lib << endl;
 		uint64_t *w = v[0].bf.u64, id = 0;
-		for (int i = 0; i < 6; i++, id += 64, w++)
+		for (int i = 0; i < 40; i++, id += 64, w++)
 			if (*w)cout << Char64out(*w) << " " << id << endl;
 	}
-
 };
-struct VECT512 {// vector  uas after 3 clues
-	BF128 v[4];
 
-	inline void Init(int n) {
-		memset(v, 0, sizeof v);
-		if (n < 128)	v[0] = maskLSB[n];
-		else {
-			v[0].SetAll_1();
-			if (n < 256)	v[1] = maskLSB[n - 128];
-			else {
-				v[1].SetAll_1();
-				if (n < 384)	v[2] = maskLSB[n - 256];
-				else {
-					v[2].SetAll_1();
-					v[3] = maskLSB[n - 384];
-				}
-			}
-		}
-	}
-	inline void Set(int i, int j) { v[i].Set(j); }
-	inline void Setx(int x) { Set((x >> 7), (x & 127)); }
-	inline void Clear(int i, int j) { v[i].clearBit(j); }
-	inline void Clearx(int x) { Clear((x >> 7), (x & 127)); }
-	inline void And(VECT512 &v2) {
-		v[0] &= v2.v[0]; v[1] &= v2.v[1]; 
-		v[2] &= v2.v[2]; v[3] &= v2.v[3];
-	}
-	inline int On(int i, int j) { return  v[i].On(j); }
-	inline void Table(int * t, int & n) {
-		n = 0;
-		uint64_t *w = v[0].bf.u64;
-		for (int i = 0, dv = 0; i < 8; i++, w++, dv += 64)
-			BitsInTable64(t, n, *w, dv);
-
-	}
-	inline void Not(VECT512 &v2) {
-		v[0] -= v2.v[0]; v[1] -= v2.v[1]; 
-		v[2] -= v2.v[2]; v[3] -= v2.v[3];
-	}
-	void Print(const char * lib) {
-		cout << "V256 status for " << lib << endl;
-		uint64_t *w = v[0].bf.u64, id = 0;
-		for (int i = 0; i < 8; i++, id += 64, w++)
-			if (*w)cout << Char64out(*w) << " " << id << endl;
-	}
-
-};
 
 struct MINCOUNT {
 	uint32_t mini_bf1, mini_bf2, mini_bf3, mini_triplet,
@@ -226,28 +132,6 @@ struct MINCOUNT {
 
 	}
 };
-
-struct XBANDA {
-	VECT384 v384; // vector other uas
-	uint32_t bf5;
-	void Debug() {
-		cout <<Char27out(bf5)<< "xbanda debug" << endl;
-		v384.Print(" v");
-	}
-};
-/*
-struct XBANDA {
-	BF128 vsm5; // vector small uas
-	VECT256 vv5; // vector other uas
-	uint32_t bf5;
-	void Debug() {
-		cout << Char27out(bf5) << "xbanda debug" << endl;
-		char ws[129];
-		cout << vsm5.String128(ws) << " vsm5" << endl;
-		vv5.Print(" vv5");
-	}
-};*/
-
 
 struct G17TMORE{// FIFO table of more for bands 1+2
 	uint64_t  t[G17MORESIZE];
@@ -468,17 +352,17 @@ struct STD_B1_2 :STD_B416 {
 
 struct STD_B3 :STD_B416 {// data specific to bands 3
 	struct GUAs {
-		BF128 isguasocket2, isguasocket3, isguasocket4;// active i81
+		BF128 isguasocket2, isguasocket3, isguasocket2_46;// active i81
 		int triplet[9];//same gua3s
 		int triplet_imini[81];
 		int ua_pair[81], ua_triplet[81]; // storing ua bitfields
 		int ua2_imini[81], ua3_imini[81];
-		int ua2_i27[81];
 	}guas;
+	struct G3X3X {// active guas at 3x3y
+		BF128 g46,g23, g23s[3];
+	}g3x3y;
 	int minirows_bf[9];
 	int triplet_perms[9][2][3];
-	BF128 v_active_guas,
-		vag2,vag3,vag_AB;// active pair triplet active after AB
 	MINCOUNT smin;
 		//BF128 tbands_UA4_6s, tbands_pairs, tbands_triplets;
 	//int tuas46[81];
@@ -494,7 +378,7 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 		for (int i = 0; i < 81; i++) if (guas.ua_triplet[i] == bf) return i;
 		return -1;
 	}
-	void SetUpMincountAB();
+	void SetUpMincountxy();
 	void PrintB3Status();
 };
 
@@ -707,9 +591,9 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	STD_B1_2 * mybb,*myba;
 	//=============== bands B order at start AB
 	uint64_t tuaB[TUA64_12SIZE];// valid uas mode AB ordered
-	uint32_t tiBc_ideb[513],
-		tiBc_pat[512],// pattern ib B
-		tiBc_kill[512],// killer in A (& of all uas)
+	uint32_t tiBc_ideb[257],
+		tiBc_pat[256],// pattern ib B
+		tiBc_kill[256],// killer in A (& of all uas)
 		ntuaB, ntiBc;
 	BF128 v128B, v128_mult, vc128A[27], vc128B[27],
 		v128B_y6[MAXNIND6],v128B_x5[MAXNIND5];
@@ -733,6 +617,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	uint32_t tclues[40];// mini 25+band a
 	int ncluesa, nclues;
 	uint32_t  bfA,bfB;
+	BF128 bands_active_pairs, bands_active_triplets;
 	//==================== current band 3 to process
 	int cur_ib;
 	uint32_t tcluesb12[20], ncluesb3x;
@@ -747,10 +632,13 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	void DebugBuildUasAB(int mode=0);
 	void DebugAdd12(uint32_t itemp, uint64_t uab12, GINT64  w);
 	void CleanTempXY();
-	int GetNextIb3();// return -1 if none 
-	void MatrixB3( STD_B3 &  myb3);
+	int FirstCheckGuaStack();
+	int FirstCheckGuaAll();
+	int EndCheckCurBand3();
 	void FinalCheckB3(uint32_t bfb3);
 	void GoBand3();
+	void MergeUasExpand();
+	void ExpandBand3(uint32_t *tua, uint32_t nua);
 	int BuildUasB3_in(uint32_t known, uint32_t field);
 	void Debug_If_Of_b3();
 };
@@ -784,12 +672,18 @@ struct TU_LOCK {// current pointer to buffer for bands expansion
 };
 
 struct TU_GUAN {// GUAN process (used GUA all kinds)
+	struct GUAN3X3Y  {// pointing to the guar sub vector id,if
+		int i, 	indd, indf;//  i=id/128  id% 128  if%128 
+	}tuaindex[128];
 	GUAN tguan[384], guanw,tgua3x3y[256];
 	uint32_t nguan,ngua3x3y;
 	uint32_t ng2, ng3;// debugging only
 	uint64_t  guabuf[15000], *pguabuf;
 	uint64_t  guabufr[10000], *pguabufr;
-	BF128 v3x3y, vcells3x3y[54],vxy, vmult,vA, vB;
+	uint32_t nuar,nuar23;
+	BF128 v3x3y, vcells3x3y[54], vxy, vxy_raw,
+		vmult,xy23sockets; 
+	VECTGUAR vua3x3y, vuac3x3y[54],vuaxy;
 	void AddGuan(uint64_t *t, uint32_t n, uint32_t cbf,
 		int32_t dbf, uint32_t ind) {
 		if (nguan < 256) {
@@ -804,15 +698,17 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 	}
 	void Build_Guas3X3Y();// after 3 clues A reduce tables
 	void Debug3X3Y();
+	void GUA23Collect();
+	void GUAEndCollect();
 	void InitC_Guas();// after 6 clues B gangster vector
 	void Debug1() {
 		for (uint32_t i = 0; i < nguan; i++)
 			tguan[i].Debug1Guan(i);
 	}
-	void DebugvB() {
+	void Debugvxy() {
 		cout << " guan actifs en vB" << endl;
 		for (uint32_t i = 0; i < 128; i++)
-			if(vB.On(i))
+			if(vxy.On(i))
 				tgua3x3y[i].Debug1Guan(i);
 	}
 };
@@ -823,7 +719,7 @@ struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	BF128 p17diag;// known 17 pattern for tests
 	int b3lim, debug17,debug17_check,
 		diag, diagbug,debugb3, aigstop,
-		npuz, a_17_found_here,nb3;
+		npuz, a_17_found_here;
 	uint32_t	iband1,iband2;
 	G17B3HANDLER g17hh0;
 

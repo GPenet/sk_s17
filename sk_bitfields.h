@@ -463,6 +463,11 @@ public:
 			if (*w)cout << Char64out(*w) << " " << id << endl;
 
 	}
+	void Print3(const char * lib) {
+		cout << "BF128 3x27 status for " << lib << endl;
+		for (int i = 0; i < 3; i++)
+			cout << Char27out(bf.u32[i])  << endl;
+	}
 };
 
 class PM3X {

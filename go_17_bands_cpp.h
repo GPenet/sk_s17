@@ -326,7 +326,6 @@ int STD_B3::IsGua(int i81) {
 	if (r1 == r2) {// gua2
 		guas.ua_pair[i81] = ua;
 		int i27 = 9 * r1 + w81.i9;// index 0-26 of the pair
-		guas.ua2_i27[i81] = i27;
 		guas.isguasocket2.Set_c(i81);
 		guas.ua2_imini[i81] = 3 * r1 + w81.i9 / 3;
 		//cout << "set gua2 i81=" << i81 << " imini=" << 3 * r1 + w81.i9 / 3 
@@ -349,7 +348,7 @@ int STD_B3::IsGua(int i81) {
 			cellc = 9 * r3 + col1, celld = 9 * r3 + col2;
 		ua |= (1 << cella) | (1 << cellb) | (1 << cellc) | (1 << celld);
 		guas.ua_pair[i81] = ua;
-		guas.isguasocket4.Set_c(i81);
+		guas.isguasocket2_46.Set_c(i81);
 		return 4;
 	}
 	if (ntc) {
@@ -358,7 +357,7 @@ int STD_B3::IsGua(int i81) {
 			int cella = 9 * r1 + col1, cellb = 9 * r2 + col2;
 			ua |= (1 << cella) | (1 << cellb);
 			guas.ua_pair[i81] = ua;
-			guas.isguasocket4.Set_c(i81);
+			guas.isguasocket2_46.Set_c(i81);
 			return 2;
 		}
 	}
@@ -368,7 +367,7 @@ int STD_B3::IsGua(int i81) {
 			cellc = 9 * r2 + col1, celld = 9 * r1 + col2;
 		ua |= (1 << cella) | (1 << cellb) | (1 << cellc) | (1 << celld);
 		guas.ua_pair[i81] = ua;
-		guas.isguasocket4.Set_c(i81);
+		guas.isguasocket2_46.Set_c(i81);
 		return 8;
 	}
 	return 0;
@@ -418,7 +417,7 @@ void STD_B3::PrintB3Status() {
 	const char* w3 = "123456789...---...123456789";
 	cout << w3 << w3 << w3 << endl;;
 	cout << guas.isguasocket2.String128(ws) << " sock2" << endl;
-	cout << guas.isguasocket4.String128(ws) << " sock4" << endl;
+	cout << guas.isguasocket2_46.String128(ws) << " sock2_46" << endl;
 	cout << guas.isguasocket3.String128(ws) << " sock3" << endl;
 }
 

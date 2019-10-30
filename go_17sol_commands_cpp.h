@@ -12,8 +12,8 @@ const char * libs_c17_00_cpt2g[40] = {
 	"5 clean entries    ",//5
 	"6 calls brute force ",//6
 	"7 valid brute force",//7
-	"8 ",//8
-	"9 ",//9
+	"8 first check non trivial",//8
+	"9 second check",//9
 	"10 b3 matrix",//10
 	"11 b3 nmissx",//11
 	"12 b3 nmiss0",//12
@@ -37,8 +37,8 @@ const char * libs_c17_00_cpt2g[40] = {
 	"31 ajouts uas",
 	"32 somme uas extraits",
 	"33 somme detail initc guas",
-	"34",
-	"35",	"36",	"37",	"38", "39",
+	"34 call initc guas",
+	"35 maxnuar",	"36 maxnuar23",	"37",	"38", "39",
 
 };
 void Go_c17_00( ) {// p2 process
@@ -170,7 +170,7 @@ void Go_c17_10( ) {
 		genb12.ValidInitGang();
 		g17b.npuz = npuz;
 		g17b.GoM10();
-		g17b.a_17_found_here = 1;
+		//g17b.a_17_found_here = 1;
 		if (!g17b.a_17_found_here) {
 			cout << "puz="<<npuz << " failed to find the searched 17" << endl;
 			cerr << "puz=" << npuz << " failed to find the searched 17" << endl;
