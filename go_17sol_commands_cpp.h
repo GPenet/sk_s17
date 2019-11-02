@@ -12,10 +12,10 @@ const char * libs_c17_00_cpt2g[40] = {
 	"5 clean entries    ",//5
 	"6 calls brute force ",//6
 	"7 valid brute force",//7
-	"8 first check non trivial",//8
-	"9 second check",//9
-	"10 b3 matrix",//10
-	"11 b3 nmissx",//11
+	"8 setup mincount",//8
+	"9 minplus",//9
+	"10 go band3 all",//10
+	"11 b3 matrix",//11
 	"12 b3 nmiss0",//12
 	"13 b3 nmiss1",//13
 	"14 b3 nmiss2",//14
@@ -25,20 +25,21 @@ const char * libs_c17_00_cpt2g[40] = {
 	"18 n uas at start",//18
 	"19 n gua2s at start  ",//19
 	"20 n gua3s at start  ",//20
-	"21 n sockets2",//21
-	"22 n sockets1",//22
+	"21 ",//21
+	"22 ",//22
 	"23 max bands 3",//23
-	"24 max bands 3 go",//24
+	"24 ",//24
 	"25  <=128",
 	"26  <=256",
-	"27  <=384",	
-	"28 <=512", "error nua >51229 ",
-	"30 ",	
+	"27  entry crit",	
+	"28  need to assign", 
+	"29  ",
+	"30  ",	
 	"31 ajouts uas",
-	"32 somme uas extraits",
-	"33 somme detail initc guas",
-	"34 call initc guas",
-	"35 maxnuar",	"36 maxnuar23",	"37",	"38", "39",
+	"32 ",
+	"33 ",
+	"34 ",
+	"35 maxnuar",	"36 ",	"37",	"38", "39",
 
 };
 void Go_c17_00( ) {// p2 process

@@ -56,16 +56,16 @@ STD_B1_2 myband1, myband2;
 #define MAXN5 51520
 #define MAXN6 237770 
 
-XINDEX3 xep_bufindex3[200*300];//band1 band2 and band3
+XINDEX3 xep_bufindex3[2*500];//band1 band2 and band3
 uint32_t xep_buffer5[2*MAXN5];// only bands 1 and 2
 uint32_t xep_buffer6[2* MAXN6];// bands 1 and 2  
 
 BF128 bB_v128[MAXN6];// Uas vector first 128 uas band B
 VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B
 
-VECT256 b3_v256_buf[200 * MAXN6];// guas vectors 6 clues bands 3
 
 GINT64 tempXY[30000];// limit chunkx * chunky here 100*200=20000
+uint64_t valid_b12[30000];// in Clear tempxy
 TEMPGUAN4 tempguan4[256];
 
 void TU_LOCK::InitBuf() {//new band 1 + band 2
@@ -73,9 +73,7 @@ void TU_LOCK::InitBuf() {//new band 1 + band 2
 	px_5 = xep_buffer5;
 	px_6 = xep_buffer6;
 }
-void TU_LOCK::InitBuf3() {// new band A + band B
-	pvx3 = b3_v256_buf;
-}
+
 
 
 uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[40];

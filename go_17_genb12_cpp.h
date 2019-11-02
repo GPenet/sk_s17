@@ -70,6 +70,7 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		SecondSockets2MoreUAs();
 		if (nua2) {
 			//tactive2[nactive2++]=i81;
+			if (nua2 > 20)nua2 = 20;
 			ntua2 += nua2;
 			w.nua = nua2;
 			w.iguan = tuguan.nguan;
@@ -444,7 +445,8 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 			}
 		}
 		if (nua2) {
-			tactive3[nactive3++] = i81;
+			//tactive3[nactive3++] = i81;
+			if (nua2 > 20)nua2 = 20;
 			ntua3 += nua2;
 			w.nua = nua2;
 			w.iguan = tuguan.nguan;
@@ -698,6 +700,14 @@ int GEN_BANDES_12::ValidBand2() {
 		//if (p_cpt2g[0]) return 1;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<	
 		if(sgo.vx[5])		if (p_cpt2g[0]> sgo.vx[5]-1)return 1;//>>>>>>>>>>>>>> 
 		if ((nb12 >> 6) < skip) return 0;// here restart value, kept untouched if no band 3 found
+		{// print a restart point every 64 bands 1+2 seen
+			uint64_t w = genb12.nb12, w1 = w >> 6;
+			w &= 63;
+			if (w == 0) {
+				long tfin = GetTimeMillis();
+				cout << "next skip value to use=\t" << w1 << "\t" << (tfin - sgo.tdeb) / 1000 << "\t" << p_cpt2g[0] << endl;
+			}
+		}
 		ValidInitGang();// also called from existing 17 in test
 		if (sgo.vx[6]) {
 			if (sgo.vx[6] == i2t16) {
@@ -709,14 +719,6 @@ int GEN_BANDES_12::ValidBand2() {
 		else //if(nb12== 4521719)
 			Find_band3B();
 		//cout << "band12=" << nb12 << "\tnband3=" << nband3 << " it16_2="<< it16_2 << endl;
-		{// print a restart point every 64 bands 1+2 seen
-			uint64_t w = genb12.nb12, w1 = w >> 6;
-			w &= 63;
-			if (w == 0) {
-				long tfin = GetTimeMillis();
-				cout << "next skip value to use=\t" << w1 <<"\t"<<(tfin-sgo.tdeb)/1000<<"\t"<< p_cpt2g[0]<< endl;
-			}
-		}
 		if ((nb12 >> 6) >= last)return 1;
 		return 0;
 	}

@@ -105,6 +105,7 @@ struct MINCOUNT {
 		mincount = _popcnt32(all_used_minis) + _popcnt32(mini_bf3);
 		mini_bf1 &= ~mini_bf2;// now pure one pair
 		mini_bf2 &= ~mini_bf3;// now pure 2 pairs
+
 		// set up pair + triplet bitfield
 		if (mini_triplet) {// must add triplet minirow
 			for (int i = 0, bit = 1, field = 7; i < 9; i++, bit <<= 1, field <<= 3)
@@ -236,15 +237,6 @@ struct MORE32 {// FIFO table of more for band b
 
 };
 
-struct G17TB3GO {
-	int ib3, minirows_triplets;
-	GINT64 pairs, // 27 bits  pairs holes 27 bits pairs cells(later pairs+triplets)
-		triplets,
-		count, // 4 items 9 bits/9 minirows 1;2;3 pairs any number of pairs
-		countsum,// 4 values (4x16 bits) min clues total and per stack
-		countstack;// count of clues per stack {bands 12 + countsum)
-	void Debug();
-}g17tb3go[512];
 struct TEMPGUAN4 {// four columns active sockets
 	VECT256  b3bf;// room for 256 bands
 	uint32_t b3ind[256], b3pat[256];
@@ -359,7 +351,7 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 		int ua2_imini[81], ua3_imini[81];
 	}guas;
 	struct G3X3X {// active guas at 3x3y
-		BF128 g46,g23, g23s[3];
+		BF128 g46, g23, gall;// g23s[3];
 	}g3x3y;
 	int minirows_bf[9];
 	int triplet_perms[9][2][3];
@@ -378,7 +370,7 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 		for (int i = 0; i < 81; i++) if (guas.ua_triplet[i] == bf) return i;
 		return -1;
 	}
-	void SetUpMincountxy();
+	void SetUpMincountxy(BF128 & validsockets);
 	void PrintB3Status();
 };
 
@@ -553,16 +545,26 @@ struct G17B3HANDLER {
 	int diagh;
 	// ================== entry in the proces
 	void Init( );
+	inline int AddCell_Of(uint32_t cell, int bit) {
+		register int s= C_stack[cell];
+		if (stack_count.u16[s] > 5) return 0;
+		stack_count.u16[s]++;
+		if (stack_count.u16[s] > 5) {
+			s =~( 07007007 << (3 * s));// mask
+			wua &= s;
+			wactive0 &= s;
+		}
+		nmiss--;
+		known_b3 |= bit;
+		return 1;
+	}
 	uint32_t IsMultiple(int bf);
-	int BuildIfShortB3();
 	int ShrinkUas1();
 	//=============== process critical
 	void CriticalAssignCell(int Ru);
 	void Critical2pairs();
-	void Go_Critical(uint32_t * wua=0);
+	void Go_Critical();
 	void CriticalLoop();
-	void CriticalExitLoop();
-	void Critical_0_UA();
 	//==================== process subcritical no cell added outside the GUAs field
 	void SubMini(int M, int mask);
 	void Go_Subcritical();
@@ -585,7 +587,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	MORE32 moreuas_b3, moreuas_b3_small;
 	uint32_t  mode_ab, ia, ib,myuab,
 		indd,indf,ncluesbandb,
-		nxy_filt1;// bufferstoring AB/XY passing filt1
+		nxy_filt1,nvalid;// bufferstoring AB/XY passing filt1
 	GINT64  stack_count, stack_countf;
 	uint32_t *mybv5;
 	STD_B1_2 * mybb,*myba;
@@ -616,7 +618,7 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	//========== tclues for valid XY 
 	uint32_t tclues[40];// mini 25+band a
 	int ncluesa, nclues;
-	uint32_t  bfA,bfB;
+	uint32_t  bfA,bfB,bf1,bf2;
 	BF128 bands_active_pairs, bands_active_triplets;
 	//==================== current band 3 to process
 	int cur_ib;
@@ -632,20 +634,28 @@ struct BANDS_AB {// handling bands 12 in A B mode
 	void DebugBuildUasAB(int mode=0);
 	void DebugAdd12(uint32_t itemp, uint64_t uab12, GINT64  w);
 	void CleanTempXY();
-	int FirstCheckGuaStack();
-	int FirstCheckGuaAll();
-	int EndCheckCurBand3();
+	void B12InTclues() {
+		nclues = 0;
+		stack_count.u64 = 0;
+		uint64_t w= b1b2_xy_bf;
+		uint32_t xcell, cell;
+		while (bitscanforward64(xcell, w)) {
+			w ^= (uint64_t)1 << xcell;
+			cell = From_128_To_81[xcell];
+			stack_count.u16[C_stack[cell]]++;
+			tclues[nclues++] = cell;
+		}
+	}
+	void CleanValid();
+	//int FirstCheckGuaStack();
 	void FinalCheckB3(uint32_t bfb3);
-	void GoBand3();
 	void MergeUasExpand();
 	void ExpandBand3(uint32_t *tua, uint32_t nua);
-	int BuildUasB3_in(uint32_t known, uint32_t field);
 	void Debug_If_Of_b3();
 };
 struct TU_LOCK {// current pointer to buffer for bands expansion
 	XINDEX3 * px_index;// pointer to next index 3 (b1,b2,dummy b3)
 	uint32_t * px_5, *px_6;// pointer to valid band5/6 next
-	VECT256 * pvx3;//pointer to bands3 first/second  v next
 	// store index end band 1 to avoid rebuilding
 	XINDEX3 * rpx_index;// pointer to next index 3 (b1,b2,dummy b3)
 	uint32_t * rpx_5, *rpx_6;// pointer to valid band5/6 next
@@ -667,7 +677,6 @@ struct TU_LOCK {// current pointer to buffer for bands expansion
 		px_6 = rpx_6;
 
 	}
-	void InitBuf3();
 
 };
 
@@ -700,7 +709,6 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 	void Debug3X3Y();
 	void GUA23Collect();
 	void GUAEndCollect();
-	void InitC_Guas();// after 6 clues B gangster vector
 	void Debug1() {
 		for (uint32_t i = 0; i < nguan; i++)
 			tguan[i].Debug1Guan(i);
