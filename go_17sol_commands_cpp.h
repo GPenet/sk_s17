@@ -36,10 +36,14 @@ const char * libs_c17_00_cpt2g[40] = {
 	"29  ",
 	"30  ",	
 	"31 ajouts uas",
-	"32 ",
-	"33 ",
-	"34 ",
-	"35 maxnuar",	"36 ",	"37",	"38", "39",
+	"32 compte moins de 5 bandes",
+	"33 min 2_4",
+	"34 min 1_3",
+	"35 maxnuar",	
+	"36 s4 <=128",	
+	"37 s4<256",	
+	"38 s4=256", 
+	"39",
 
 };
 void Go_c17_00( ) {// p2 process
@@ -360,8 +364,37 @@ void Go_c17_91() {// UAs collector 2 bands
 32 31   0       0       0       546     12291   101597
 		*/
 void Go_c17_92() {// test UAs 5 6 expand
+	cout << "entry 92" << endl;
+	tulock.InitBuf();
+	uint32_t cpt[10];
 
-	
+	memset(cpt, 0, sizeof cpt);// used in debugging sequences only
+	for (int it16 = 0; it16 <= 415; it16++) {
+		myband1.Initstd();
+		myband1.InitG12(it16);
+		myband1.ExpandBand();// expand and set index
+		//cout << "it16=" << it16 << endl;
+		//myband1.DebugIndex();
+		//break;
+		if (myband1.nmyi3 >(int) cpt[0])cpt[0] = myband1.nmyi3;
+		if (myband1.nmybv5 >(int) cpt[1])cpt[1] = myband1.nmybv5;
+		if (myband1.nmybv6 > (int)cpt[2])cpt[2] = myband1.nmybv6;
+		for (int i = 0; i < myband1.nmyi3-1; i++) {
+			XINDEX3 x1 = myband1.myi3[i], x2 = myband1.myi3[i + 1];
+			uint32_t n5 = x2.ideb5 - x1.ideb5,
+				n6 = x2.ideb - x1.ideb;
+			if (n5 > cpt[3])cpt[3] = n5;
+			if (n6 > cpt[4])cpt[4] = n6;
+		}
+
+
+	}
+	cout << "maxindex=" << cpt[0] << endl;
+	cout << "maxn5=" << cpt[1] << endl;
+	cout << "maxn6=" << cpt[2] << endl;
+	cout << "maxdet5=" << cpt[3] << endl;
+	cout << "maxdet6=" << cpt[4] << endl;
+
 }
 
 
