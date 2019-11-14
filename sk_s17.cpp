@@ -4,14 +4,7 @@
 /* program organisation
 	main is the standard frame including the basic brute force 
 */
-/*
-entry 92
-maxindex= 983
-maxn5= 51516
-maxn6= 237762
-maxdet5= 261
-maxdet6= 2004
-*/
+
 //#define MODE66_ON
 #define GTEST17_ON 1
 #define UALIMSIZE 20
@@ -19,6 +12,18 @@ maxdet6= 2004
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
 #define TUA64_12SIZE 3000
+/*entry 92
+maxindex= 983
+maxn5= 51516
+maxn6= 237762
+maxdet5= 261
+maxdet6= 2004
+*/
+#define MAXN5 51520
+#define MAXN6 237770 
+#define MAXNIND6 2100
+#define MAXNIND5 300
+
 //============================================== 
 
 #define G17MORESIZE 32
@@ -59,15 +64,11 @@ STD_B1_2 myband1, myband2;
 
 //=== buffers to store valid bands and vectors
 
-#define MAXN5 51520
-#define MAXN6 237770 
 
-XINDEX3 xep_bufindex3[5000];//band1 band2 and band3
+XINDEX3 xep_bufindex3[2000];//band1 band2  
 uint32_t xep_buffer5[2*MAXN5];// only bands 1 and 2
 uint32_t xep_buffer6[2* MAXN6];// bands 1 and 2  
 
-BF128 bB_v128[MAXN6];// Uas vector first 128 uas band B
-VECT256 bB_v256[MAXN6]; // Uas vector >128 uas band B
 
 
 GINT64 tempXY[30000];// limit chunkx * chunky here 100*200=20000

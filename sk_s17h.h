@@ -372,7 +372,6 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 };
 
 #define SIZETGUA 150
-#define GUAREDSIZE 100
 struct GEN_BANDES_12 {// encapsulating global data 
 	STD_B3 bands3[512];
 	int modeb12, go_back, diagmore,diagbug,
@@ -534,13 +533,11 @@ maxn6= 237762
 maxdet5= 261
 maxdet6= 2004
 */
-#define MAXNIND6 2100
-#define MAXNIND5 300
 
 struct BANDS_AB {// handling bands 12 in A B mode
 
 	G17TMORE moreuas_AB, moreuas_AB_small, moreuas_AB_big;
-	MORE32 moreuas_b3, moreuas_b3_small;
+	MORE32 moreuas_b3;
 	uint32_t  mode_ab, ia, ib,myuab,
 		indd,indf,ncluesbandb,
 		nxy_filt1,nvalid;// bufferstoring AB/XY passing filt1
@@ -608,8 +605,8 @@ struct BANDS_AB {// handling bands 12 in A B mode
 		}
 	}
 	void CleanValid();
-	//int FirstCheckGuaStack();
 	void FinalCheckB3(uint32_t bfb3);
+	void Fout(uint32_t bfb3);
 	void MergeUasExpand();
 	void ExpandBand3(uint32_t *tua, uint32_t nua);
 	void Debug_If_Of_b3();
@@ -669,13 +666,17 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 		nguan = 0;//and guan table
 	}
 	void Build_Guas3X();// after 3 clues A reduce tables
-	void Debug3X();
 
 	void Build_Guas3X3Y();// after 3 clues A reduce tables
 	void Debug3X3Y();
 	void Debug1() {
 		for (uint32_t i = 0; i < nguan; i++)
 			tguan[i].Debug1Guan(i);
+	}
+	void Debug3X() {
+		cout << "test Debug3X nguan=" << ngua3x << " n3x=" << ngua3x << endl;
+		for (uint32_t i = 0; i < ngua3x; i++)
+			tgua3x[i].Debug1Guan(i);
 	}
 	void Debugvxy() {
 		cout << " guan actifs en vB" << endl;
@@ -684,8 +685,6 @@ struct TU_GUAN {// GUAN process (used GUA all kinds)
 				tgua3x3y[i].Debug1Guan(i);
 	}
 };
-
-
   
 struct G17B {// hosting the search in 6 6 5 mode combining bands solutions
 	BF128 p17diag;// known 17 pattern for tests
